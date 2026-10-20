@@ -635,7 +635,7 @@ function addActivityStatus(parent,status="Pending",dateTime=""){
         request.onsuccess=()=>{ const blob=new Blob([JSON.stringify(request.result,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="bcm_db.json"; a.click(); }
     }
     function PlaningReport(){
-      document.location.href ="bcmadvreport2026.html";
+      document.location.href ="index.html";
     }
 
   /*popup wordcloud*/
