@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Business Planing Report</title>
+<style>
+:root { --primary: #0b6fa4; --secondary: #f4f4f4; --panel: #ffffff; --panel-alt: #f8fbff; --border: #dfeaf4; --text: #1f2937; --muted: #5b6477; --light-green: #e8f9ef; --warning: #fff4db; }
+body { font-family: Arial, sans-serif; margin:0; background: linear-gradient(180deg, #f2f6fb 0%, #eef5f8 100%); color: var(--text); }
+.container { max-width: 1100px; margin:auto; padding:20px; }
+h1 { text-align:center; color:var(--primary); margin:0 0 18px; }
+.module-card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:22px; margin-bottom:24px; box-shadow:0 10px 25px rgba(15, 23, 42, 0.06); }
+.module-card h2 { margin:0 0 10px 0; color:var(--primary); }
+.activity { margin-bottom:18px; }
+.activity-card { background:linear-gradient(180deg, #ffffff 0%, #f7fbff 100%); border:1px solid var(--border); border-radius:12px; padding:16px; box-shadow:0 6px 14px rgba(15, 23, 42, 0.04); }
+.activity-header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px; }
+.activity-title { font-weight:700; color:#1d3557; display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.activity-key { color:var(--muted); font-weight:600; font-size:12px; }
+.field-shell { background:var(--panel-alt); border:1px solid var(--border); border-radius:10px; padding:12px; }
+.activity input[type="text"], .activity input[type="number"], .metric-input { width:100%; padding:9px 12px; border:1px solid #cfe0ef; border-radius:8px; background:#fff; color:#2a374a; box-sizing:border-box; font-size:14px; }
+.activity textarea, .metric-textarea { width:100%; padding:10px 12px; min-height:80px; border:1px solid #cfe0ef; border-radius:8px; background:#fff; color:#2a374a; resize:vertical; box-sizing:border-box; font-size:14px; }
+.activity input[readonly], .activity input:disabled, .metric-input[readonly] { background:#f8fbff; color:#334155; cursor:not-allowed; }
+.switch { position:relative; display:inline-block; width:42px; height:22px; }
+.switch input { opacity:0; width:0; height:0; }
+.slider { position:absolute; cursor:not-allowed; top:0; left:0; right:0; bottom:0; background-color:#d6e4ef; transition:.2s; border-radius:20px; }
+.slider:before { position:absolute; content:""; height:16px; width:16px; left:3px; bottom:3px; background:white; border-radius:50%; transition:.2s; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+input:checked+.slider { background-color: var(--primary); }
+input:checked+.slider:before { transform:translateX(20px); }
+.range-wrapper { display:flex; align-items:center; gap:10px; flex:1; }
+.range-wrapper input[type="range"] { -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:4px; background:linear-gradient(90deg, var(--primary) 0%, #93c5fd 100%); outline:none; cursor:not-allowed; }
+.range-wrapper input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--primary); box-shadow:0 0 0 2px rgba(11,111,164,0.15); }
+.range-wrapper output { min-width:35px; text-align:center; color:var(--primary); font-weight:bold; }
+.sub-activities { margin:12px 0 0 18px; padding-left:14px; border-left:3px solid #dfeaf4; }
+.sub-activities ul { margin:4px 0 0; padding-left:18px; }
+.sub-activities li { margin-bottom:10px; color:#444; }
+.sub-activities input[type="number"], .sub-activities input[type="text"] { width:100%; padding:7px 10px; border:1px solid #d7e7f2; border-radius:8px; background:#fff; color:#334155; }
+.sub-activities input[readonly], .sub-activities input:disabled { background:#f8fbff; color:#667085; cursor:not-allowed; }
+.status-history { margin-top:12px; padding:12px; border:1px solid #e1e7ef; border-radius:10px; background:#fafbff; }
+.status-entry { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:8px; }
+.status-badge { display:inline-flex; align-items:center; justify-content:center; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:.03em; }
+.status-badge.pending { background:#f59e0b; }
+.status-badge.processing { background:#0ea5e9; }
+.status-badge.rejected { background:#ef4444; }
+.status-badge.complete { background:#10b981; }
+.status-datetime { font-size:13px; color:#334155; }
+.chart-area { margin-top:16px; background:#fafafa; border:1px solid #ebf3f9; border-radius:14px; padding:12px; }
+.chart-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+.chart-title { margin:0; color:#27374a; font-size:16px; font-weight:600; }
+.toggle-group { display:inline-flex; border:1px solid #cfd8df; border-radius:9999px; overflow:hidden;}
+.toggle-group button { padding:6px 10px; border:none; background:white; cursor:pointer; font-size:12px; }
+.toggle-group button.active { background:var(--primary); color:white; }
+.chart-wrapper { width:100%; height:300px; }
+.chart-wrapper canvas { width:100% !important; height:100% !important; }
+.rag { display:inline-flex; align-items:center; gap:8px; padding:5px 12px; border-radius:999px; color:#fff; font-size:12px; font-weight:700; text-transform:uppercase; margin-right:6px; }
+.rag.green { background:#16a34a; }
+.rag.amber { background:#f59e0b; color:#0f172a; }
+.rag.red { background:#dc2626; }
+.severity { display:inline-flex; align-items:center; gap:8px; padding:5px 12px; border-radius:999px; font-weight:700; font-size:12px; text-transform:uppercase; margin-right:6px; }
+.severity.low { background:#bbf7d0; color:#166534; }
+.severity.medium { background:#fde68a; color:#92400e; }
+.severity.high { background:#fecaca; color:#991b1b; }
+.severity.critical { background:#dc2626; color:#fff; }
+.trend { display:inline-flex; align-items:center; gap:6px; font-weight:700; font-size:12px; }
+.trend.up { color:#16a34a; }
+.trend.down { color:#dc2626; }
+.percentage-pill { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:999px; background:#dbeafe; color:#1d4ed8; font-weight:700; font-size:12px; margin-right:6px; }
+.dr { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:999px; font-weight:700; font-size:12px; text-transform:uppercase; margin-right:6px; }
+.dr.active { background:#cffafe; color:#0f766e; }
+.dr.standby { background:#fef9c3; color:#92400e; }
+.dr.planned { background:#ede9fe; color:#7c3aed; }
+.dr.disabled { background:#e2e8f0; color:#334155; }
+#wordCloud { width:70%; height:500px; border:1px solid #ccc; margin:auto; background:white; }
+.topbar { display: flex;align-items: center;gap: 12px;margin-bottom: 18px; }
+.actions {display:flex;gap:8px;flex:0 0 auto; }
+.actions button {padding: 6px 10px;border-radius:6px;border:1px solid rgba(0,0,0,0.06);background:white;cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="container">
+    <!-- Topbar: left toolbar, centered H1, optional right actions -->
+    <div class="topbar">
+      <div class="toolbar">
+      </div>
+
+      <div class="header-wrap">
+        <h1 class="site-title">📊 Business Planning Report</h1>
+        <select id="moduleSelect" style="padding:4px 8px;border-radius:4px;border:1px solid #ccc;">
+            <option value="">-- Select Module --</option>
+        </select>
+
+      </div>
+
+      <div class="actions">
+        <button id="btnEdit">✏️</button>
+        <button id="btnPDF">📄</button>
+      </div>
+    </div>
+
+    <div id="report"></div>
+</div>
+
+<script src="chart.js"></script>
+<script src="wordcloud2.js"></script>
+<script src="html2canvas.min.js"></script>
+<script src="jspdf.umd.min.js"></script>
+<script>
+let db;
+let storeName= "modules";
+const charts=new Map();
+const request = indexedDB.open("BCM_DB_3", 1);
+
+request.onupgradeneeded = function(event) {
+  db = event.target.result;
+  if (!db.objectStoreNames.contains(storeName)) {
+    db.createObjectStore(storeName, { keyPath: "id", autoIncrement: true });
+  }
+};
+
+request.onsuccess = function(event) {
+  db = event.target.result;
+  loadModules();
+};
+
+request.onerror = function(event) {
+  console.error("IndexedDB error:", event.target.errorCode);
+};
+
+function generateColors(n){
+    const colors=[];
+    for(let i=0;i<n;i++){
+        let hue=Math.round(i*360/n);
+        if(hue>=0 && hue<=15) hue+=20;
+        if(hue>=345) hue-=20;
+        colors.push(`hsl(${hue},70%,50%)`);
+    }
+    return colors;
+}
+function stringParse(str1,valueMap){
+    
+    let result = str1.replace(/#(.*?)#/g, (_, expr) => {
+        const replacedExpr = expr.replace(/\b[A-Z][A-Z0-9]*\b/g, m => 
+            valueMap[m] !== undefined ? valueMap[m] : m
+        );
+
+        try {
+            return eval(Math.round(replacedExpr,2)); // evaluate final expression
+        } catch {
+            return `#${expr}#`;
+        }
+    });
+    return result;
+}
+function loadModules() {
+  const tx = db.transaction([storeName], "readonly");
+  const store = tx.objectStore(storeName);
+  const request = store.getAll();
+
+  request.onsuccess = () => {
+    const modules = request.result || [];
+    const select = document.getElementById("moduleSelect");
+    const container = document.getElementById("report");
+
+    // Populate dropdown
+    select.innerHTML = `<option value="">-- Select Module --</option>`;
+    modules.forEach((mod, idx) => {
+      const opt = document.createElement("option");
+      opt.value = mod.id;
+      opt.textContent = mod.module;
+      select.appendChild(opt);
+    });
+
+    // Handle selection
+    select.onchange = () => {
+      const selectedId = parseInt(select.value);
+      container.innerHTML = "";
+      if (!selectedId) return;
+      const mod = modules.find(m => m.id === selectedId);
+      if (mod) renderModule(mod,selectedId);
+    };
+
+    // Auto-load first module (optional)
+    if (modules.length > 0) {
+      select.value = modules[0].id;
+      select.onchange();
+    }
+  };
+}
+
+function renderModule(mod,idx){
+    const tx=db.transaction([storeName],"readonly");
+    const store=tx.objectStore(storeName);
+    const request=store.getAll();
+    let wordcloudex=[];
+    request.onsuccess=()=>{
+        const container=document.getElementById("report");
+        container.innerHTML="";
+       
+            const card=document.createElement("div");
+            card.className="module-card";
+            card.innerHTML=`<h2>${mod.module}</h2><p><strong>Purpose:</strong> ${mod.purpose}</p>`;
+
+            const moduleFloatData=[];
+            const valueMap={}; // store values by title
+            
+            mod.activities.forEach((act, actIdx)=>{
+                const row=document.createElement("div");
+                row.className="activity";
+                let control="";
+
+                if(act.type==="boolean"){
+                    control=`<label class="switch"><input type="checkbox" disabled ${act.value==="true"?"checked":""}><span class="slider"></span></label>`;
+                    valueMap[act.keyName]= (act.value==="true"?1:0);
+                }
+                else if(act.type==="int"){
+                    control=`<input class="metric-input" type="number" value="${act.value||0}" readonly>`;
+                    valueMap[act.keyName]= parseFloat(act.value)||0;
+                }
+                else if( act.type==="float"){
+                    control=`<input class="metric-input" type="number" step="0.01" value="${act.value||0}" readonly>`;
+                    valueMap[act.keyName]= parseFloat(act.value)||0;
+                }
+                else if(act.type==="chartfloat"){
+                    control=`<input class="metric-input" type="number" step="0.01" value="${act.value||0}" readonly>`;
+                    moduleFloatData.push({ name: act.label||"Activity", value: parseFloat(act.value)||0 });
+                    valueMap[act.keyName]= parseFloat(act.value)||0;
+                }
+                else if(act.type==="slider"){
+                    let [min,max,val]=[0,100,act.value];
+                    control=`<div class="range-wrapper"><input type="range" min="${min}" max="${max}" value="${val}" disabled><output>${val}</output></div>`;
+                    valueMap[act.keyName]= parseFloat(act.value)||0;
+                }
+                else if(act.type==="percentage"){
+                    const value = parseFloat(act.value)||0;
+                    control = `<span class="percentage-pill">${value.toFixed(2)}%</span>`;
+                    valueMap[act.keyName]=value;
+                }
+                else if(act.type==="dr"){
+                    const value = String(act.value||"").toLowerCase();
+                    const label = value === "active" ? "DR Active" : value === "standby" ? "DR Standby" : value === "planned" ? "DR Planned" : "DR Disabled";
+                    control = `<span class="dr ${value}">${label}</span>`;
+                    valueMap[act.keyName]=value;
+                }
+                else if(act.type==="rag"){
+                    const value = String(act.value||"").toLowerCase();
+                    control=`<span class="rag ${value}">${value.toUpperCase()}</span>`;
+                    valueMap[act.keyName]=value;
+                }
+                else if(act.type==="severity"){
+                    const value = String(act.value||"").toLowerCase();
+                    control=`<span class="severity ${value}">${value.toUpperCase()}</span>`;
+                    valueMap[act.keyName]=value;
+                }
+                else if(act.type==="trend"){
+                    const value = String(act.value||"").toLowerCase();
+                    control = value === "up"
+                        ? `<span class="trend up">▲ Improving</span>`
+                        : `<span class="trend down">▼ Declining</span>`;
+                    valueMap[act.keyName]=value;
+                }
+                else if(act.type==="formula"){
+                    const formulaText=act.value||"";
+                    let result="";
+                    try{
+                        const expr=formulaText.replace(/\b[A-Za-z0-9_ ]+\b/g, m => 
+                            (valueMap[m.trim()]!==undefined ? valueMap[m.trim()] : m)
+                        );
+                        result=eval(expr);
+                    }catch(e){ result="Error"; }
+                    control=`
+                        <div>
+                            <div style="margin-top:6px;">
+                                <label>${'('+ formulaText + ') yields'} :</label>
+                                <input class="metric-input" type="text" value="${Math.round(result,2)}" readonly>
+                            </div>
+                        </div>
+                    `;
+                    if(act.showChart===true)
+                        moduleFloatData.push({ name: act.label ||"Activity", value: Math.round(result,2)||0 });
+                    valueMap[act.keyName]=result;
+                }
+                else if(act.type==="text"){
+                    let result=stringParse(act.value,valueMap);
+                    control=`<textarea class="metric-textarea" readonly rows="3">${result||""}</textarea>`;
+                }
+                else if(act.type==="html"){
+                    let result=stringParse(act.value,valueMap);
+                    control=`${result||""}`;   
+                }
+                else if(act.type==="wordcloud"){
+                    let str1 = act.value;
+                    control=`<canvas id="wordCloud${actIdx}" ></canvas>`;
+                    let result=stringParse(str1,valueMap);
+                    wordcloudex.push(`generateWordCloud('wordCloud${actIdx}','${result}')`);
+                }
+                else{
+                    control=`<input class="metric-input" type="text" value="${act.value||""}" readonly>`;
+                }
+
+                const statusText = formatStatusHistory(act.statusActivities || []);
+
+                let html_s = `
+                <div class="activity-card">
+                    <div class="activity-header">
+                        <div class="activity-title">
+                            <span>${act.label || "Activity"}</span>
+                            ${act.keyName ? `<span class="activity-key">(${act.keyName})</span>` : ""}
+                        </div>
+                    </div>
+                    <div class="field-shell">${control}</div>
+                    ${statusText && statusText.trim() !== "" ? `
+                        <div class="status-history">
+                            <div style="font-weight:700; margin-bottom:8px;">Status History for ${act.label || "Activity"} :</div>
+                            ${statusText}
+                        </div>` : ""}
+                </div>
+                `;
+
+                row.innerHTML = html_s;
+                card.appendChild(row);
+                
+                const sliderEl=row.querySelector("input[type='range']");
+                if(sliderEl) styleSlider(sliderEl);
+
+                if(act.subActivities && act.subActivities.length>0){
+                    const subDiv=document.createElement("div");
+                    subDiv.className="sub-activities";
+                    const ul=document.createElement("ul");
+                    const subFloatData=[];
+                    act.subActivities.forEach(sa=>{
+                        const li=document.createElement("li");
+                        let subControl="";
+                        if(sa.type==="formula"){
+                            const formulaText=sa.value||"";
+                            let result="";
+                            try{
+                                const expr=formulaText.replace(/\b[A-Za-z0-9_ ]+\b/g, m => 
+                                    (valueMap[m.trim()]!==undefined ? valueMap[m.trim()] : m)
+                                );
+                                result=eval(expr);
+                            }catch(e){ result="Error"; }
+                            subControl=`
+                                <div>                               
+                                    <div style="margin-top:4px;">
+                                        <label>${'('+ formulaText + ') yields'}:</label>
+                                        <input type="text" value="${Math.round(result,2)}" readonly>
+                                    </div>
+                                </div>
+                            `;
+                            if(sa.showChart===true)
+                                subFloatData.push({ name: sa.label||"Activity", value: Math.round(result,2)||0 });
+                            valueMap[sa.keyName]=result;
+                        }
+                        else if(sa.type==="int" ||sa.type==="chartfloat"){
+                            subControl=`<input type="number" value="${sa.value||0}" readonly>`;
+                            subFloatData.push({name: sa.label||"Sub-Activity", value: parseFloat(sa.value)||0});
+                            valueMap[sa.keyName]= parseFloat(sa.value)||0;
+                        }
+                        else if(sa.type==="float"){
+                            subControl=`<input type="number" value="${sa.value||0}" readonly>`;
+                            //subFloatData.push({name: sa.label||"Sub-Activity", value: parseFloat(sa.value)||0});
+                            valueMap[sa.keyName]= parseFloat(sa.value)||0;
+                        }
+                        else if(sa.type==="percentage"){
+                            const val = parseFloat(sa.value)||0;
+                            subControl=`<span class="percentage-pill">${val.toFixed(2)}%</span>`;
+                            valueMap[sa.keyName]=val;
+                        }
+                        else if(sa.type==="dr"){
+                            const val = String(sa.value||"").toLowerCase();
+                            const label = val === "active" ? "DR Active" : val === "standby" ? "DR Standby" : val === "planned" ? "DR Planned" : "DR Disabled";
+                            subControl=`<span class="dr ${val}">${label}</span>`;
+                            valueMap[sa.keyName]=val;
+                        }
+                        else if(sa.type==="rag"){
+                            const val = String(sa.value||"").toLowerCase();
+                            subControl=`<span class="rag ${val}">${val.toUpperCase()}</span>`;
+                            valueMap[sa.keyName]=val;
+                        }
+                        else if(sa.type==="severity"){
+                            const val = String(sa.value||"").toLowerCase();
+                            subControl=`<span class="severity ${val}">${val.toUpperCase()}</span>`;
+                            valueMap[sa.keyName]=val;
+                        }
+                        else if(sa.type==="trend"){
+                            const val = String(sa.value||"").toLowerCase();
+                            subControl = val==="up"
+                                ? `<span class="trend up">▲ Improving</span>`
+                                : `<span class="trend down">▼ Declining</span>`;
+                            valueMap[sa.keyName]=val;
+                        }
+                        else if(sa.type==="text"){
+                            subControl=`<textarea readonly rows="3" style="width:100%;background:#eee;color:#555;border:1px solid #ccc;border-radius:4px;padding:6px;">${sa.value||""}</textarea>`;
+                        }
+                        else if(sa.type==="html"){
+                            subControl=`${sa.value||""}`;
+                        }
+                        else if(sa.type==="wordcloud"){
+                            subControl=`${sa.value||""}`;
+                        }
+                        else{
+                            subControl=`<input type="text" value="${sa.value||""}" readonly>`;
+                        }
+                        li.innerHTML=`<strong>${sa.keyName||"Sub-Activity"} ${sa.keyName!==""?"("+ sa.keyName + ")":""} :</strong> ${subControl}`;
+                        ul.appendChild(li);
+                    });
+                    subDiv.appendChild(ul);
+                    card.appendChild(subDiv);
+
+                    if(subFloatData.length>0){
+                        createChartBlock(card, `${idx}-${actIdx}-sub`, act.label+" — Sub-Activity", subFloatData);
+                    }
+                }
+            });
+
+            if(moduleFloatData.length >= 3){
+                createRadarChartBlock(card, `${idx}-main-radar`, mod.module+" — Spider Chart", moduleFloatData);
+            }
+
+            if(moduleFloatData.length>0){
+                createChartBlock(card, `${idx}-main`, mod.module+" — Activities", moduleFloatData);
+            }
+
+            container.appendChild(card);
+           
+        
+        wordcloudex.forEach( (exe) =>{
+            console.log(exe);
+            eval(exe);
+        });
+    };
+}
+
+function createRadarChartBlock(card,id,title,data){
+    const canvasId=`radar-${id}`;
+    const radarArea=document.createElement("div");
+    radarArea.className="chart-area";
+    radarArea.innerHTML=`
+        <div class="chart-header">
+            <h3 class="chart-title">🕸️ ${title}</h3>
+        </div>
+        <div class="chart-wrapper"><canvas id="${canvasId}"></canvas></div>
+    `;
+    card.appendChild(radarArea);
+    setTimeout(()=>createOrUpdateRadarChart(canvasId,data,title),0);
+}
+
+function createChartBlock(card,id,title,data){
+    const canvasId=`chart-${id}`;
+    const chartArea=document.createElement("div");
+    chartArea.className="chart-area";
+    chartArea.innerHTML=`
+        <div class="chart-header">
+            <h3 class="chart-title">📈 ${title}</h3>
+            <div class="toggle-group" data-for="${canvasId}">
+                <button type="button" class="active" data-type="bar">Bar</button>
+                <button type="button" data-type="line">Line</button>
+                <button type="button" data-type="pie">Pie</button>
+            </div>
+        </div>
+        <div class="chart-wrapper"><canvas id="${canvasId}"></canvas></div>
+    `;
+    card.appendChild(chartArea);
+    setTimeout(()=>createOrUpdateChart(canvasId,data,"bar"),0);
+    chartArea.querySelector(".toggle-group").addEventListener("click",ev=>{
+        const btn=ev.target.closest("button"); if(!btn) return;
+        const type=btn.dataset.type;
+        chartArea.querySelectorAll("button").forEach(b=>b.classList.toggle("active",b===btn));
+        createOrUpdateChart(canvasId,data,type);
+    });
+}
+
+function createOrUpdateRadarChart(canvasId,data,title){
+    const canvas=document.getElementById(canvasId); if(!canvas) return;
+    if(charts.has(canvasId)){ charts.get(canvasId).destroy(); charts.delete(canvasId); }
+    const ctx=canvas.getContext("2d"); if(!ctx) return;
+    const radarData = data.slice(0, 8).map(d => ({ label: d.name, value: Number(d.value) || 0 }));
+    const chart=new Chart(ctx,{
+        type:"radar",
+        data:{
+            labels: radarData.map(d => d.label),
+            datasets:[{
+                label: title,
+                data: radarData.map(d => d.value),
+                backgroundColor:"rgba(11,111,164,0.2)",
+                borderColor:"#0b6fa4",
+                pointBackgroundColor:"#0b6fa4",
+                pointBorderColor:"#fff",
+                pointRadius:4,
+                pointHoverRadius:5
+            }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            plugins:{ legend:{ display:true, position:"bottom" } },
+            scales:{
+                r:{
+                    beginAtZero:true,
+                    min:0,
+                    max:100,
+                    ticks:{ stepSize:20 },
+                    grid:{ color:"rgba(148,163,184,0.25)" },
+                    angleLines:{ color:"rgba(148,163,184,0.25)" }
+                }
+            }
+        }
+    });
+    charts.set(canvasId,chart);
+}
+
+function createOrUpdateChart(canvasId,data,type){
+    const canvas=document.getElementById(canvasId); if(!canvas) return;
+    if(charts.has(canvasId)){ charts.get(canvasId).destroy(); charts.delete(canvasId);}
+    const ctx=canvas.getContext("2d"); if(!ctx) return;
+    const bgColors=generateColors(data.length);
+    const chart=new Chart(ctx,{
+        type,
+        data:{ labels:data.map(d=>d.name), datasets:[{ label:"", data:data.map(d=>d.value), backgroundColor:bgColors, borderColor:type==="pie"?"#fff":bgColors, borderWidth:1, tension:0.25, pointRadius:type==="line"?3:0 }] },
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false, position:"bottom"} }, scales:type==="pie"?{}:{ x:{ title:{ display:false}}, y:{ title:{ display:true, text:"Values"}, beginAtZero:true } } }
+    });
+    charts.set(canvasId,chart);
+}
+
+function styleSlider(slider){
+    const min=+slider.min||0,max=+slider.max||100,val=+slider.value||0;
+    const percent=((val-min)/(max-min))*100;
+    slider.style.background=`linear-gradient(to right,var(--primary) ${percent}%,#ddd ${percent}%)`;
+}
+function EditPlaningReport(){
+    document.location.href="bcmadv2026.html";
+}
+
+function generateWordCloud(id,input) {
+    //const input = document.getElementById("textInput").value;
+
+    if (!input) {
+    alert("Please enter some text!");
+    return;
+    }
+    // Format output as list: [...]
+    const output = input.split(",").map(pair => {
+    const [name, num] = pair.split(":");
+    return [name.trim(), Number(num.trim())];
+    });
+
+    console.log(id);
+    const canvas = document.getElementById(id);
+
+    resizeCanvas(canvas);
+    
+    // Generate word cloud
+    WordCloud(canvas, {
+    list: output,
+    gridSize: 8,                     // smaller grid = tighter packing
+    weightFactor: 14,                // adjust size scaling
+    fontFamily: 'Arial, sans-serif',
+    color: () => `hsl(${Math.random()*360}, 70%, 50%)`,
+    rotateRatio: 0.3,
+    rotationSteps: 2,
+    backgroundColor: '#fff',
+    // 🔑 Important tweaks
+    drawOutOfBound: false,           // prevents words from going off canvas
+    shrinkToFit: true,   
+    shuffle: true,   // randomize placement order
+    ellipticity: 1,              // auto shrink to avoid overflow
+    origin: [canvas.width/2 , canvas.height/2] // center placement
+    });
+}
+    
+
+function resizeCanvas(canvas) {
+    const ctx = canvas.getContext("2d");
+    const dpr = 0.9;//window.devicePixelRatio || 1;
+    // Save the displayed size
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width  * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+}
+//status
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getStatusClass(status) {
+    switch ((status || '').toLowerCase()) {
+        case 'pending': return 'pending';
+        case 'processing': return 'processing';
+        case 'rejected': return 'rejected';
+        case 'complete': return 'complete';
+        default: return 'pending';
+    }
+}
+
+function formatDateTime(dateTime) {
+    if (!dateTime) return '';
+    const parsed = new Date(dateTime);
+    return isNaN(parsed.getTime()) ? escapeHtml(dateTime) : escapeHtml(parsed.toLocaleString());
+}
+
+function formatStatusHistory(statusActivities) {
+    if (!statusActivities || statusActivities.length === 0)
+        return "";
+
+    return statusActivities.map(s => {
+        const status = escapeHtml(s.status || 'Unknown');
+        const datetime = formatDateTime(s.dateTime || '');
+        const statusClass = getStatusClass(s.status);
+        return `
+            <div class="status-entry">
+                <span class="status-badge ${statusClass}">${status}</span>
+                <span class="status-datetime">${datetime}</span>
+            </div>`;
+    }).join('');
+}
+/*download*/
+async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+
+    // Take screenshot of page (or specific element)
+    const element = document.body; // or document.getElementById("content")
+    const canvas = await html2canvas(element, { scale: 1 }); // higher scale = better quality
+    const imgData = canvas.toDataURL("image/jpeg",0.6);
+
+    // Create PDF
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    // First page
+    pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    // Add extra pages if content is longer
+    while (heightLeft > 0) {
+    position = heightLeft - imgHeight;
+    pdf.addPage();
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+    }
+
+    // Save PDF
+    pdf.save("page.pdf");
+}
+
+document.getElementById('btnEdit').addEventListener('click', () => {
+    EditPlaningReport();
+});
+document.getElementById('btnPDF').addEventListener('click', () => {
+    downloadPDF();
+});
+</script>
+<footer style="text-align: center; padding: 10px 0; font-size: 14px; color: #555;">
+    &copy; 2025 Rajesh Manavalan. All rights reserved.
+</footer>
+</body>
+</html>
