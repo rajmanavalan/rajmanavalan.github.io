@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Business Planing</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; padding: 20px; }
+    .container { max-width: 1000px; margin: auto; background: #fff; padding: 20px;
+      border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);}
+    h1 a { color: #333; text-decoration: none; }
+    input, select, textarea, button {
+      padding: 6px; border: 1px solid #ccc; border-radius: 4px;
+    }
+    textarea { resize: vertical; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ddd; padding: 6px; }
+    .activity, .sub-activity {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+    .sub-activity { margin-left: 30px; }
+    .sub-activities { margin-left: 20px; border-left: 2px dashed #ddd; padding-left: 10px; }
+    .switch { position: relative; display: inline-block; width: 40px; height: 20px; vertical-align: middle;}
+    .switch input {display:none;}
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc; border-radius: 20px; transition: .2s;}
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px;
+      left: 2px; bottom: 2px; background-color: white; border-radius: 50%; transition: .2s;}
+    input:checked + .slider { background-color: #4caf50; }
+    input:checked + .slider:before { transform: translateX(20px); }
+    .formula-extra { display:flex; align-items:center; gap:6px; margin-top:4px; }
+
+  /*pop up*/
+
+  /* Modal backdrop */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.45);
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Modal box */
+  .modal {
+    background: #fff;
+    border-radius: 10px;
+    width: 480px;
+    max-width: 95%;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+    padding: 20px;
+    animation: fadeIn 0.25s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal-header {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .modal textarea {
+    width: 100%;
+    height: 60px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    padding: 6px;
+    font-family: monospace;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 6px 8px;
+    text-align: left;
+  }
+
+  th { background: #f2f2f2; }
+
+  td button {
+    background: #ccc;
+    color: #333;
+    font-size: 13px;
+    padding: 4px 8px;
+  }
+
+  td button:hover {
+    background: #aaa;
+  }
+
+  .modal-footer {
+    text-align: right;
+    margin-top: 12px;
+  }
+
+  .close-btn {
+    float: right;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #888;
+  }
+  .close-btn:hover { color: #000; }
+
+  /*richtext editor*/
+  /* Modal */
+  .modal {
+    background: white;
+    border-radius: 10px;
+    width: 720px;
+    max-width: 95%;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .toolbar button {
+    background: #e0e7ff;
+    color: #222;
+    border: 1px solid #ccc;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .toolbar button:hover {
+    background: #cbd5ff;
+  }
+
+  .editor-container {
+    display: flex;
+    gap: 10px;
+  }
+
+  textarea {
+    flex: 1;
+    height: 220px;
+    font-size: 14px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    resize: none;
+  }
+
+  .preview {
+    flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fafafa;
+    padding: 8px;
+    overflow-y: auto;
+  }
+
+  .modal-footer {
+    text-align: right;
+  }
+  
+.status-history{
+  margin-top:6px;
+  padding:6px;
+  border:1px dashed #ccc;
+  width:100%;
+}
+.status-activity{
+  display:flex;
+  gap:6px;
+  margin:4px 0;
+  flex-wrap:wrap;
+}
+
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="toolbar">
+      <button onclick="document.getElementById('uploadFile').click()">⬆ Upload JSON</button>
+      <button onclick="downloadData()">⬇ Download JSON</button>
+      <button onclick="PlaningReport()">Planing Report</button>
+      <input type="file" id="uploadFile" accept="application/json" style="display:none" onchange="uploadData(event)">
+    </div>
+    <h1>Business Planing</h1>
+
+    <form id="bcmForm">
+      <input type="hidden" id="editId" />
+      <input type="text" id="module" placeholder="Module Name" required />
+      <input type="text" id="purpose" placeholder="Purpose" required />
+
+      <h3>Activities</h3>
+      
+      <div id="activitiesContainer"></div>
+      <button type="button" onclick="addActivity()">+ Add Activity</button>
+
+      <button type="submit">Save Module</button>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Module</th>
+          <th>Purpose</th>
+          <th>Activities</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="bcmList"></tbody>
+    </table>
+  </div>
+<div class="modal-backdrop" id="wcModalBackdrop">
+  <div class="modal">
+    <h2>WordCloud Data Editor</h2>
+    <table id="wordTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Word / Label</th>
+          <th>Value / Frequency</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button onclick="addRow()">+ Add Row</button>
+    <div class="modal-footer">
+      <button onclick="closeWCModal(true)">✅ Save & Close</button>
+      <button onclick="closeWCModal(false)">❌ Cancel</button>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop" id="htmlModalBackdrop">
+  <div class="modal">
+    <div class="modal-header">
+      ✨ Rich Text Editor
+      <button style="float:right;background:none;border:none;font-size:18px;cursor:pointer;" onclick="closeHtmlModal()">✖</button>
+    </div>
+
+    <div class="toolbar">
+      <button onclick="wrapTag('b')"><b>B</b></button>
+      <button onclick="wrapTag('i')"><i>I</i></button>
+      <button onclick="wrapTag('u')"><u>U</u></button>
+      <button onclick="applyHeading('h2')">H2</button>
+      <button onclick="applyHeading('h3')">H3</button>
+      <button onclick="applyColor()">🎨 Color</button>
+      <input type="color" id="colorPicker" style="display:none;" onchange="setColor(this.value)">
+    </div>
+
+    <div class="editor-container">
+      <textarea id="plainText" placeholder="Type your text here..."></textarea>
+      <div class="preview" id="htmlPreview">Live Preview</div>
+    </div>
+
+    <div class="modal-footer">
+      <button onclick="copyHtml()">📋 Copy HTML</button>
+      <button onclick="closeHtmlModal()">Close</button>
+    </div>
+  </div>
+</div>
+  <script>
+    let db;
+    let currentHtmlTextarea = null;
+    let currentWordcloudTextarea = null;
+    const storeName= "modules";
+    const request = indexedDB.open("BCM_DB_3", 1);
+
+    request.onupgradeneeded = function(event) {
+      db = event.target.result;
+      if (!db.objectStoreNames.contains(storeName)) {
+        db.createObjectStore(storeName, { keyPath: "id", autoIncrement: true });
+      }
+    };
+
+    request.onsuccess = function(event) {
+      db = event.target.result;
+      loadModules();
+    };
+
+    request.onerror = function(event) {
+      console.error("IndexedDB error:", event.target.errorCode);
+    };
+
+    // ==== Activity / Sub-Activity creation ====
+    function addActivity(type = "text", value = "", subActs = [], showChart = false, keyName = "", label = "", statusActivities = []) {
+      const container = document.getElementById("activitiesContainer");
+      const div = document.createElement("div");
+      div.className = "activity";
+      div.innerHTML = `
+        <input type="text" placeholder="Key Name" value="${keyName}">
+        <input type="text" placeholder="Label" value="${label}">
+        <select onchange="updateValueField(this)">
+          ${getTypeOptions(type)}
+        </select>
+        <span class="valueField">${getValueField(type, value, showChart)}</span>
+        <button type="button" onclick="addSubActivity(this.parentElement)">+ Sub</button>
+        <button type="button" onclick="moveUp(this.parentElement)">⬆</button>
+        <button type="button" onclick="moveDown(this.parentElement)">⬇</button>
+        <button type="button" onclick="this.parentElement.remove()">X</button>
+        <div class="sub-activities"></div>
+      `;
+      container.appendChild(div);
+      renderStatusHistory(div,statusActivities);
+      subActs.forEach(s => addSubActivity(div, s.type, s.value, s.showChart, s.keyName, s.label, s.statusActivities||[]));
+    }
+
+
+    function addSubActivity(parent, type = "text", value = "", showChart = false, keyName = "", label = "", statusActivities = []) {
+      // parent is the .activity element (passed as this.parentElement from the "+ Sub" button)
+      const subDiv = parent.querySelector(".sub-activities");
+      const div = document.createElement("div");
+      div.className = "sub-activity";
+
+      // inputs order: Key Name, Label, Title  (collectActivity expects this order)
+      div.innerHTML = `
+        <input type="text" placeholder="Key Name" value="${keyName || ""}">
+        <input type="text" placeholder="Label" value="${label || ""}">
+        <select onchange="updateValueField(this)">
+          ${getTypeOptions(type)}
+        </select>
+        <span class="valueField">${getValueField(type, value, showChart)}</span>
+        <button type="button" onclick="moveUp(this.parentElement)">⬆</button>
+        <button type="button" onclick="moveDown(this.parentElement)">⬇</button>
+        <button type="button" onclick="this.parentElement.remove()">X</button>
+      `;
+
+      subDiv.appendChild(div); renderStatusHistory(div,statusActivities);
+    }
+
+
+    function getTypeOptions(selected) {
+      const types = [
+        "text","html","wordcloud","boolean","int","chartfloat","float","percentage","formula","slider","timeline","duration","severity","rag","trend","dr"
+      ];
+      return types.map(t=>{
+        const label = t === "dr" ? "DR" : t[0].toUpperCase()+t.slice(1);
+        return `<option value="${t}" ${t===selected?"selected":""}>${label}</option>`;
+      }).join("");
+    }
+
+    // ==== Ordering ====
+    function moveUp(el) {
+      const prev = el.previousElementSibling;
+      if (prev) el.parentNode.insertBefore(el, prev);
+    }
+    function moveDown(el) {
+      const next = el.nextElementSibling;
+      if (next) el.parentNode.insertBefore(next, el);
+    }
+
+    // ==== Value field rendering ====
+    function getValueField(type, value = "", showChart=false) {
+      switch (type) {
+        case "boolean":
+          return `<label class="switch">
+                    <input type="checkbox" ${value==="true"?"checked":""}>
+                    <span class="slider"></span>
+                  </label>`;
+        case "int":
+          return `<input type="number" value="${value||0}">`;
+        case "chartfloat":
+        case "float":
+          return `<input type="number" step="0.01" value="${value||0}">`;
+        case "percentage":
+          return `<div style="display:flex;align-items:center;gap:6px;">
+                    <input type="number" step="0.01" min="0" max="100" value="${value||0}">
+                    <span>%</span>
+                  </div>`;
+        case "slider":
+          return `<input type="range" min="0" max="100" value="${value||50}" oninput="this.nextElementSibling.value=this.value">
+                  <output>${value||50}</output>`;
+        case "timeline":
+          return `<input type="datetime-local" value="${value}">`;
+        case "duration":
+          const [num, unit] = value ? value.split(" ") : ["", "days"];
+          return `<input type="number" min="1" value="${num||1}" style="width:70px"> 
+                  <select>
+                    <option value="days" ${unit==="days"?"selected":""}>Days</option>
+                    <option value="months" ${unit==="months"?"selected":""}>Months</option>
+                    <option value="years" ${unit==="years"?"selected":""}>Years</option>
+                  </select>`;
+        case "formula":
+          return `<div>
+                    <textarea rows="2" placeholder="e.g. A1 + A2">${value||""}</textarea>
+                    <div class="formula-extra">
+                      <label>Show in Chart</label>
+                      <label class="switch">
+                        <input type="checkbox" ${showChart?"checked":""}>
+                        <span class="slider"></span>
+                      </label>
+                    </div>
+                  </div>`;
+         case "html":
+            return `<textarea rows="2" class="html-value">${value||""}</textarea>
+                    <button type="button" onclick="openHtmlEditor(this)">📝 Edit HTML</button>`;
+          // ...existing cases...
+        case "wordcloud":
+            return `<textarea rows="2" class="wordcloud-value">${value||""}</textarea>
+              <button type="button" onclick="openWordcloudModal(this)">🧩 Edit WordCloud</button>`;
+        case "severity": {
+          const selected = String(value||"").toLowerCase();
+          return `
+          <select>
+            <option value="low" ${selected === "low" ? "selected" : ""}>Low</option>
+            <option value="medium" ${selected === "medium" ? "selected" : ""}>Medium</option>
+            <option value="high" ${selected === "high" ? "selected" : ""}>High</option>
+            <option value="critical" ${selected === "critical" ? "selected" : ""}>Critical</option>
+          </select>`;
+        }
+
+        case "rag": {
+          const selected = String(value||"").toLowerCase();
+          return `
+          <select>
+            <option value="green" ${selected === "green" ? "selected" : ""}>Green</option>
+            <option value="amber" ${selected === "amber" ? "selected" : ""}>Amber</option>
+            <option value="red" ${selected === "red" ? "selected" : ""}>Red</option>
+          </select>`;
+        }
+
+        case "trend": {
+          const selected = String(value||"").toLowerCase();
+          return `
+          <select>
+            <option value="up" ${selected === "up" ? "selected" : ""}>▲ Improving</option>
+            <option value="down" ${selected === "down" ? "selected" : ""}>▼ Declining</option>
+          </select>`;
+        }
+        case "dr": {
+          const selected = String(value||"").toLowerCase();
+          return `
+          <select>
+            <option value="active" ${selected === "active" ? "selected" : ""}>DR Active</option>
+            <option value="standby" ${selected === "standby" ? "selected" : ""}>DR Standby</option>
+            <option value="planned" ${selected === "planned" ? "selected" : ""}>DR Planned</option>
+            <option value="disabled" ${selected === "disabled" ? "selected" : ""}>DR Disabled</option>
+          </select>`;
+        }
+    // ...existing cases...
+        default:
+          return `<textarea rows="2">${value||""}</textarea>`;
+      }
+    }
+
+    function updateValueField(select) {
+      const type = select.value;
+      const span = select.parentElement.querySelector(".valueField");
+      span.innerHTML = getValueField(type);
+      
+    }
+
+    
+function renderStatusHistory(container,statusActivities=[]){
+  const wrap=document.createElement("div");
+  wrap.className="status-history";
+  wrap.innerHTML=`<b>Status History</b>
+      <div class="statusActivitiesContainer"></div>
+      <button type="button" onclick="addActivityStatus(this.parentElement)">+ Status</button>`;
+  container.appendChild(wrap);
+
+  statusActivities.forEach(s=>addActivityStatus(wrap,s.status,s.dateTime));
+}
+
+function addActivityStatus(parent,status="Pending",dateTime=""){
+  if(!dateTime) dateTime=new Date().toISOString().slice(0,16);
+
+  const c=parent.querySelector(".statusActivitiesContainer");
+  const div=document.createElement("div");
+  div.className="status-activity";
+  div.innerHTML=`
+    <select class="status-select">
+      <option value="Pending">Pending</option>
+      <option value="Processing">Processing</option>
+      <option value="Rejected">Rejected</option>
+      <option value="Complete">Complete</option>
+    </select>
+    <input type="datetime-local" class="status-date" value="${dateTime}">
+    <button type="button" onclick="this.parentElement.remove()">X</button>
+  `;
+  div.querySelector(".status-select").value=status;
+  c.appendChild(div);
+}
+
+// ==== Save Module ====
+    document.getElementById("bcmForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const module = document.getElementById("module").value;
+      const purpose = document.getElementById("purpose").value;
+      const editId = document.getElementById("editId").value;
+
+      const activities = Array.from(document.querySelectorAll("#activitiesContainer>.activity")).map(div => collectActivity(div));
+      const tx = db.transaction(storeName, "readwrite");
+      const store = tx.objectStore(storeName);
+
+      if (editId) store.put({ id: Number(editId), module, purpose, activities });
+      else store.add({ module, purpose, activities });
+
+      tx.oncomplete = () => { loadModules(); this.reset(); document.getElementById("activitiesContainer").innerHTML=""; };
+    });
+
+    function collectActivity(div) {
+      const inputs = div.querySelectorAll("input[type=text]");
+      const keyName = inputs[0]?.value || "";
+      const label = inputs[1]?.value || "";
+      const title = inputs[2]?.value || "";
+      const type = div.querySelector("select").value;
+      const valueField = div.querySelector(".valueField");
+      let value = "", showChart = false;
+
+      if (type === "boolean") value = valueField.querySelector("input").checked.toString();
+      else if (type === "slider") value = valueField.querySelector("input").value;
+      else if (type === "timeline") value = valueField.querySelector("input").value;
+      else if (type === "duration") {
+        const num = valueField.querySelector("input").value;
+        const unit = valueField.querySelector("select").value;
+        value = `${num} ${unit}`;
+      }
+      else if (type === "formula") {
+        value = valueField.querySelector("textarea").value;
+        showChart = valueField.querySelector(".formula-extra input[type=checkbox]").checked;
+      }
+      else if( type === "severity" || type === "rag" || type === "trend" || type === "dr"){
+        value = valueField.querySelector("select").value;
+      }
+      else value = valueField.querySelector("input,textarea").value;
+
+      const statusActivities = Array.from(div.querySelectorAll(":scope > .status-history .status-activity")).map(s=>({
+        status:s.querySelector(".status-select").value,
+        dateTime:s.querySelector(".status-date").value
+      }));
+      const subActs = Array.from(div.querySelectorAll(".sub-activity")).map(sd => collectActivity(sd));
+      return { keyName, label, title, type, value, showChart, statusActivities, subActivities: subActs };
+    }
+
+
+    // ==== Load Modules ====
+    function loadModules() {
+      const tx=db.transaction([storeName],"readonly");
+      const store=tx.objectStore(storeName);
+      const req = store.getAll();
+
+      req.onsuccess = function() {
+        const list = document.getElementById("bcmList");
+        list.innerHTML = "";
+        req.result.forEach(item => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${item.module}</td>
+            <td>${item.purpose}</td>
+            <td>${item.activities.map(a => a.label).join(", ")}</td>
+            <td>
+              <button onclick='editModule(${item.id})'>Edit</button>
+              <button onclick='deleteModule(${item.id})'>Delete</button>
+            </td>
+          `;
+          list.appendChild(row);
+        });
+      };
+    }
+
+    function deleteModule(id) {
+      let confirmation = confirm("Are you sure you want to delete this item?");
+      if (confirmation) {
+          const tx = db.transaction(storeName, "readwrite");
+          tx.objectStore(storeName).delete(id);
+          tx.oncomplete = () => loadModules();
+      }
+    }
+
+    function editModule(id) {
+      const tx = db.transaction(storeName, "readonly");
+      const req = tx.objectStore(storeName).get(id);
+      req.onsuccess = function() {
+        const item = req.result;
+        if (!item) return alert("Item not found");
+
+        // populate form top-level fields
+        document.getElementById("editId").value = item.id;
+        document.getElementById("module").value = item.module || "";
+        document.getElementById("purpose").value = item.purpose || "";
+
+        // clear current activities UI
+        const cont = document.getElementById("activitiesContainer");
+        cont.innerHTML = "";
+
+        // restore activities (if any)
+        (item.activities || []).forEach(a => {
+          // addActivity(title, type, value, subActs, showChart, keyName, label)
+          addActivity(
+            a.type || "text",
+            a.value || "",
+            a.subActivities || [],
+            !!a.showChart,
+            a.keyName || "",
+            a.label || "",
+            a.statusActivities || []
+          );
+        });
+      };
+      req.onerror = function(e) {
+        console.error("Failed to load module for edit:", e);
+      };
+    }
+    function uploadData(event){
+        const file=event.target.files[0]; if(!file) return;
+        const reader=new FileReader();
+        reader.onload=e=>{
+            try{ const data=JSON.parse(e.target.result); if(!Array.isArray(data)) throw "Invalid";
+            const tx=db.transaction([storeName],"readwrite"); const store=tx.objectStore(storeName);
+            data.forEach(entry=>{ delete entry.id; store.add(entry); });
+            tx.oncomplete=()=>{ alert("✅ Data imported"); loadModules(); }
+            }catch{ alert("❌ Invalid JSON"); }
+        };
+        reader.readAsText(file);
+    }
+    function downloadData(){
+        const tx=db.transaction([storeName],"readonly"); const store=tx.objectStore(storeName); const request=store.getAll();
+        request.onsuccess=()=>{ const blob=new Blob([JSON.stringify(request.result,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="bcm_db.json"; a.click(); }
+    }
+    function PlaningReport(){
+      document.location.href ="bcmadvreport2026.html";
+    }
+
+  /*popup wordcloud*/
+  let editingTable = [];
+  let activeTextarea = null;
+
+  function openWordcloudModal(btn) {
+    activeTextarea = btn.previousElementSibling;
+    //activeTextarea = textareaEl;
+    const value = activeTextarea.value.trim();
+    document.getElementById("wcModalBackdrop").style.display = "flex";
+    editingTable = parseWordCloud(value);
+    renderTable();
+  }
+
+  function closeWCModal(saveChanges) {
+    if (saveChanges && activeTextarea) {
+      const output = editingTable.map(i => `${i.word}:${i.value}`).join(", ");
+      activeTextarea.value = output;
+    }
+    document.getElementById("wcModalBackdrop").style.display = "none";
+    activeTextarea = null;
+  }
+
+  function parseWordCloud(str) {
+    return str.split(",").map(s => s.trim()).filter(Boolean).map((pair, idx) => {
+      const [word, value] = pair.split(":");
+      return { word: word?.trim() || "", value: value?.trim() || "1", rank: idx + 1 };
+    });
+  }
+
+  function renderTable() {
+    const tbody = document.querySelector("#wordTable tbody");
+    tbody.innerHTML = "";
+    editingTable.forEach((item, idx) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${idx + 1}</td>
+        <td><input value="${item.word}" oninput="updateWord(${idx}, this.value)"></td>
+        <td><input type="number" value="${item.value}" oninput="updateValue(${idx}, this.value)"></td>
+        <td class="actions">
+          <button onclick="moveUp(${idx})">⬆</button>
+          <button onclick="moveDown(${idx})">⬇</button>
+          <button onclick="deleteRow(${idx})">🗑</button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function updateWord(index, val) { editingTable[index].word = val; }
+  function updateValue(index, val) { editingTable[index].value = val; }
+
+  function moveUp(index) {
+    if (index === 0) return;
+    [editingTable[index - 1], editingTable[index]] = [editingTable[index], editingTable[index - 1]];
+    renderTable();
+  }
+  function moveDown(index) {
+    if (index === editingTable.length - 1) return;
+    [editingTable[index + 1], editingTable[index]] = [editingTable[index], editingTable[index + 1]];
+    renderTable();
+  }
+  function deleteRow(index) {
+    editingTable.splice(index, 1);
+    renderTable();
+  }
+  function addRow() {
+    editingTable.push({ word: "NewWord", value: "1" });
+    renderTable();
+  }
+    
+
+  /*rich text editor*/
+
+  function openHtmlModal() {
+    document.getElementById("htmlModalBackdrop").style.display = "flex";
+    updatePreview();
+  }
+  function openHtmlEditor(btn) {
+    // The textarea is the previous sibling of the button
+    currentHtmlTextarea = btn.previousElementSibling;
+    //currentHtmlTextarea
+    document.getElementById("plainText").value = currentHtmlTextarea.value;
+    document.getElementById("htmlModalBackdrop").style.display = "flex";
+    updatePreview();
+  }
+  function closeHtmlModal() {
+    document.getElementById("htmlModalBackdrop").style.display = "none";
+    if (currentHtmlTextarea) {
+      currentHtmlTextarea.value = document.getElementById("plainText").value;
+      currentHtmlTextarea = null;
+    }
+  }
+
+  function openWordcloudEditor(btn) {
+    currentWordcloudTextarea = btn.previousElementSibling;
+    // Set modal textarea with current value
+    document.getElementById("rawInput").value = currentWordcloudTextarea.value;
+    document.getElementById("modalBackdrop").style.display = "flex";
+    // Optionally, load the table if value exists
+    if (currentWordcloudTextarea.value.trim()) loadTable();
+  }
+
+  function closeModal() {
+    document.getElementById("modalBackdrop").style.display = "none";
+    document.getElementById("dataTable").style.display = "none";
+    // If editing from activity, update textarea
+    if (currentWordcloudTextarea) {
+      currentWordcloudTextarea.value = document.getElementById("rawInput").value;
+      currentWordcloudTextarea = null;
+    }
+  }
+
+  function wrapTag(tag) {
+    const textarea = document.getElementById("plainText");
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = textarea.value.substring(start, end);
+    const before = textarea.value.substring(0, start);
+    const after = textarea.value.substring(end);
+    textarea.value = `${before}<${tag}>${selected}</${tag}>${after}`;
+    updatePreview();
+  }
+
+  function applyHeading(tag) {
+    const textarea = document.getElementById("plainText");
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = textarea.value.substring(start, end);
+    const before = textarea.value.substring(0, start);
+    const after = textarea.value.substring(end);
+    textarea.value = `${before}<${tag}>${selected}</${tag}>${after}`;
+    updatePreview();
+  }
+
+  function applyColor() {
+    document.getElementById("colorPicker").click();
+  }
+
+  function setColor(color) {
+    const textarea = document.getElementById("plainText");
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = textarea.value.substring(start, end);
+    const before = textarea.value.substring(0, start);
+    const after = textarea.value.substring(end);
+    textarea.value = `${before}<span style="color:${color}">${selected}</span>${after}`;
+    updatePreview();
+  }
+
+  function updatePreview() {
+    const text = document.getElementById("plainText").value;
+    document.getElementById("htmlPreview").innerHTML = text;
+  }
+
+  document.getElementById("plainText").addEventListener("input", updatePreview);
+
+  function copyHtml() {
+    const html = document.getElementById("plainText").value;
+    navigator.clipboard.writeText(html).then(() => {
+      alert("✅ HTML copied to clipboard!");
+    });
+  }
+  </script>
+  <footer style="text-align: center; padding: 10px 0; font-size: 14px; color: #555;">
+    &copy; 2025 Rajesh Manavalan. All rights reserved.
+  </footer>
+</body>
+</html>
