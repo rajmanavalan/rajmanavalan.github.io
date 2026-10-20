@@ -5,37 +5,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Business Planing Report</title>
 <style>
-:root { --primary: #0b6fa4; --secondary: #f4f4f4; --panel: #ffffff; --panel-alt: #f8fbff; --border: #dfeaf4; --text: #1f2937; --muted: #5b6477; --light-green: #e8f9ef; --warning: #fff4db; }
-body { font-family: Arial, sans-serif; margin:0; background: linear-gradient(180deg, #f2f6fb 0%, #eef5f8 100%); color: var(--text); }
-.container { max-width: 1100px; margin:auto; padding:20px; }
-h1 { text-align:center; color:var(--primary); margin:0 0 18px; }
-.module-card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:22px; margin-bottom:24px; box-shadow:0 10px 25px rgba(15, 23, 42, 0.06); }
-.module-card h2 { margin:0 0 10px 0; color:var(--primary); }
-.activity { margin-bottom:18px; }
-.activity-card { background:linear-gradient(180deg, #ffffff 0%, #f7fbff 100%); border:1px solid var(--border); border-radius:12px; padding:16px; box-shadow:0 6px 14px rgba(15, 23, 42, 0.04); }
-.activity-header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px; }
-.activity-title { font-weight:700; color:#1d3557; display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
-.activity-key { color:var(--muted); font-weight:600; font-size:12px; }
-.field-shell { background:var(--panel-alt); border:1px solid var(--border); border-radius:10px; padding:12px; }
-.activity input[type="text"], .activity input[type="number"], .metric-input { width:100%; padding:9px 12px; border:1px solid #cfe0ef; border-radius:8px; background:#fff; color:#2a374a; box-sizing:border-box; font-size:14px; }
-.activity textarea, .metric-textarea { width:100%; padding:10px 12px; min-height:80px; border:1px solid #cfe0ef; border-radius:8px; background:#fff; color:#2a374a; resize:vertical; box-sizing:border-box; font-size:14px; }
-.activity input[readonly], .activity input:disabled, .metric-input[readonly] { background:#f8fbff; color:#334155; cursor:not-allowed; }
-.switch { position:relative; display:inline-block; width:42px; height:22px; }
-.switch input { opacity:0; width:0; height:0; }
-.slider { position:absolute; cursor:not-allowed; top:0; left:0; right:0; bottom:0; background-color:#d6e4ef; transition:.2s; border-radius:20px; }
-.slider:before { position:absolute; content:""; height:16px; width:16px; left:3px; bottom:3px; background:white; border-radius:50%; transition:.2s; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
-input:checked+.slider { background-color: var(--primary); }
-input:checked+.slider:before { transform:translateX(20px); }
-.range-wrapper { display:flex; align-items:center; gap:10px; flex:1; }
-.range-wrapper input[type="range"] { -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:4px; background:linear-gradient(90deg, var(--primary) 0%, #93c5fd 100%); outline:none; cursor:not-allowed; }
-.range-wrapper input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--primary); box-shadow:0 0 0 2px rgba(11,111,164,0.15); }
-.range-wrapper output { min-width:35px; text-align:center; color:var(--primary); font-weight:bold; }
-.sub-activities { margin:12px 0 0 18px; padding-left:14px; border-left:3px solid #dfeaf4; }
-.sub-activities ul { margin:4px 0 0; padding-left:18px; }
-.sub-activities li { margin-bottom:10px; color:#444; }
-.sub-activities input[type="number"], .sub-activities input[type="text"] { width:100%; padding:7px 10px; border:1px solid #d7e7f2; border-radius:8px; background:#fff; color:#334155; }
-.sub-activities input[readonly], .sub-activities input:disabled { background:#f8fbff; color:#667085; cursor:not-allowed; }
-.status-history { margin-top:12px; padding:12px; border:1px solid #e1e7ef; border-radius:10px; background:#fafbff; }
+:root { --primary: #0b6fa4; --secondary: #f4f4f4; }
+body { font-family: Arial, sans-serif; margin:0; background: var(--secondary);}
+.container { max-width: 1000px; margin:auto; padding:20px;}
+h1 { text-align:center; color:var(--primary);}
+.module-card { background:white; border-radius:6px; padding:20px; margin-bottom:24px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+.module-card h2 { margin:0 0 10px 0; color:var(--primary);}
+.activity { margin-bottom:16px; }
+.activity label { font-weight:bold; color:#333;}
+.activity input[type="text"], .activity input[type="number"] { width:100%; padding:6px; border:1px solid #ccc; border-radius:4px; background:#eee; color:#555;}
+.activity input[readonly], .activity input:disabled { background:#eee; color:#666; cursor:not-allowed;}
+.switch { position:relative; display:inline-block; width:40px; height:20px;}
+.switch input { opacity:0; width:0; height:0;}
+.slider { position:absolute; cursor:not-allowed; top:0; left:0; right:0; bottom:0; background-color:#ccc; transition:.2s; border-radius:20px;}
+.slider:before { position:absolute; content:""; height:14px; width:14px; left:3px; bottom:3px; background:white; border-radius:50%; transition:.2s;}
+input:checked+.slider { background-color: var(--primary);}
+input:checked+.slider:before { transform:translateX(20px);}
+.range-wrapper { display:flex; align-items:center; gap:10px; flex:1;}
+.range-wrapper input[type="range"] { -webkit-appearance:none; width:100%; height:6px; border-radius:4px; background:#ddd; outline:none; cursor:not-allowed;}
+.range-wrapper input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--primary);}
+.range-wrapper output { min-width:35px; text-align:center; color:var(--primary); font-weight:bold;}
+.sub-activities { margin:6px 0 0 20px; padding-left:12px; border-left:2px solid #ddd;}
+.sub-activities ul { margin:4px 0 0; padding-left:18px;}
+.sub-activities li { margin-bottom:4px; color:#444; }
+.sub-activities input[type="number"], .sub-activities input[type="text"] { width:100%; padding:6px; border:1px solid #ccc; border-radius:4px; background:#eee; color:#555;}
+.sub-activities input[readonly], .sub-activities input:disabled { background:#eee; color:#666; cursor:not-allowed;}
+.status-history { margin-top:12px; padding:12px; border:1px solid #e1e7ef; border-radius:8px; background:#fafbff; }
 .status-entry { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:8px; }
 .status-badge { display:inline-flex; align-items:center; justify-content:center; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:.03em; }
 .status-badge.pending { background:#f59e0b; }
@@ -43,15 +38,15 @@ input:checked+.slider:before { transform:translateX(20px); }
 .status-badge.rejected { background:#ef4444; }
 .status-badge.complete { background:#10b981; }
 .status-datetime { font-size:13px; color:#334155; }
-.chart-area { margin-top:16px; background:#fafafa; border:1px solid #ebf3f9; border-radius:14px; padding:12px; }
-.chart-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
-.chart-title { margin:0; color:#27374a; font-size:16px; font-weight:600; }
+.chart-area { margin-top:16px; background:#fafafa; border:1px solid #eee; border-radius:6px; padding:12px;}
+.chart-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px;}
+.chart-title { margin:0; color:#333; font-size:16px; font-weight:600;}
 .toggle-group { display:inline-flex; border:1px solid #cfd8df; border-radius:9999px; overflow:hidden;}
-.toggle-group button { padding:6px 10px; border:none; background:white; cursor:pointer; font-size:12px; }
-.toggle-group button.active { background:var(--primary); color:white; }
-.chart-wrapper { width:100%; height:300px; }
-.chart-wrapper canvas { width:100% !important; height:100% !important; }
-.rag { display:inline-flex; align-items:center; gap:8px; padding:5px 12px; border-radius:999px; color:#fff; font-size:12px; font-weight:700; text-transform:uppercase; margin-right:6px; }
+.toggle-group button { padding:6px 10px; border:none; background:white; cursor:pointer; font-size:12px;}
+.toggle-group button.active { background:var(--primary); color:white;}
+.chart-wrapper { width:100%; height:300px;}
+.chart-wrapper canvas { width:100% !important; height:100% !important;}
+.rag { display:inline-flex; align-items:center; gap:8px; padding:5px 12px; border-radius:999px; color:#fff; font-size:12px; font-weight:700; text-transform:uppercase; margin-right:6px;}
 .rag.green { background:#16a34a; }
 .rag.amber { background:#f59e0b; color:#0f172a; }
 .rag.red { background:#dc2626; }
@@ -69,10 +64,13 @@ input:checked+.slider:before { transform:translateX(20px); }
 .dr.standby { background:#fef9c3; color:#92400e; }
 .dr.planned { background:#ede9fe; color:#7c3aed; }
 .dr.disabled { background:#e2e8f0; color:#334155; }
+/*wo*/
 #wordCloud { width:70%; height:500px; border:1px solid #ccc; margin:auto; background:white; }
-.topbar { display: flex;align-items: center;gap: 12px;margin-bottom: 18px; }
-.actions {display:flex;gap:8px;flex:0 0 auto; }
-.actions button {padding: 6px 10px;border-radius:6px;border:1px solid rgba(0,0,0,0.06);background:white;cursor:pointer; }
+  /* top bar area */
+.topbar { display: flex;align-items: center;gap: 12px;margin-bottom: 18px;}
+/* right actions (optional) */
+.actions {display:flex;gap:8px;flex:0 0 auto;}
+.actions button {padding: 6px 10px;border-radius:6px;border:1px solid rgba(0,0,0,0.06);background:white;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -212,15 +210,16 @@ function renderModule(mod,idx){
                     valueMap[act.keyName]= (act.value==="true"?1:0);
                 }
                 else if(act.type==="int"){
-                    control=`<input class="metric-input" type="number" value="${act.value||0}" readonly>`;
+                    control=`<input type="number" value="${act.value||0}" readonly>`;
                     valueMap[act.keyName]= parseFloat(act.value)||0;
                 }
                 else if( act.type==="float"){
-                    control=`<input class="metric-input" type="number" step="0.01" value="${act.value||0}" readonly>`;
+                    control=`<input type="number" step="0.01" value="${act.value||0}" readonly>`;
+                    //moduleFloatData.push({ name: act.label||"Activity", value: parseFloat(act.value)||0 });
                     valueMap[act.keyName]= parseFloat(act.value)||0;
                 }
                 else if(act.type==="chartfloat"){
-                    control=`<input class="metric-input" type="number" step="0.01" value="${act.value||0}" readonly>`;
+                    control=`<input type="number" step="0.01" value="${act.value||0}" readonly>`;
                     moduleFloatData.push({ name: act.label||"Activity", value: parseFloat(act.value)||0 });
                     valueMap[act.keyName]= parseFloat(act.value)||0;
                 }
@@ -270,7 +269,7 @@ function renderModule(mod,idx){
                         <div>
                             <div style="margin-top:6px;">
                                 <label>${'('+ formulaText + ') yields'} :</label>
-                                <input class="metric-input" type="text" value="${Math.round(result,2)}" readonly>
+                                <input type="text" value="${Math.round(result,2)}" readonly>
                             </div>
                         </div>
                     `;
@@ -280,7 +279,7 @@ function renderModule(mod,idx){
                 }
                 else if(act.type==="text"){
                     let result=stringParse(act.value,valueMap);
-                    control=`<textarea class="metric-textarea" readonly rows="3">${result||""}</textarea>`;
+                    control=`<textarea readonly rows="3" style="width:100%;resize:vertical;background:#eee;color:#555;border:1px solid #ccc;border-radius:4px;padding:6px;">${result||""}</textarea>`;
                 }
                 else if(act.type==="html"){
                     let result=stringParse(act.value,valueMap);
@@ -293,29 +292,37 @@ function renderModule(mod,idx){
                     wordcloudex.push(`generateWordCloud('wordCloud${actIdx}','${result}')`);
                 }
                 else{
-                    control=`<input class="metric-input" type="text" value="${act.value||""}" readonly>`;
+                    control=`<input type="text" value="${act.value||""}" readonly>`;
+                }
+                if(act.type==="wordcloud"){
+                    row.innerHTML=`${control}`;
+                }
+                else{
+                    row.innerHTML=`<label>${act.label||"Activity"}  ${act.keyName!==""?"("+ act.keyName + ")": "" } :</label> ${control}`
                 }
 
                 const statusText = formatStatusHistory(act.statusActivities || []);
 
+                // ✅ Build base content first
                 let html_s = `
-                <div class="activity-card">
-                    <div class="activity-header">
-                        <div class="activity-title">
-                            <span>${act.label || "Activity"}</span>
-                            ${act.keyName ? `<span class="activity-key">(${act.keyName})</span>` : ""}
-                        </div>
-                    </div>
-                    <div class="field-shell">${control}</div>
-                    ${statusText && statusText.trim() !== "" ? `
-                        <div class="status-history">
-                            <div style="font-weight:700; margin-bottom:8px;">Status History for ${act.label || "Activity"} :</div>
-                            ${statusText}
-                        </div>` : ""}
-                </div>
+                <label>${act.label || "Activity"} ${act.keyName ? "(" + act.keyName + ")" : ""} :</label>
+                ${control}
                 `;
 
+                // ✅ Append status ONLY if it exists
+                if (statusText && statusText.trim() !== "") {
+                html_s += `
+                <div class="status-history">
+                    <div style="font-weight:700; margin-bottom:8px;">Status History for ${act.label || "Activity"} :</div>
+                    ${statusText}
+                </div>`;
+                }
+
+                // ✅ Assign only ONCE
                 row.innerHTML = html_s;
+
+                
+
                 card.appendChild(row);
                 
                 const sliderEl=row.querySelector("input[type='range']");
@@ -412,10 +419,6 @@ function renderModule(mod,idx){
                 }
             });
 
-            if(moduleFloatData.length >= 3){
-                createRadarChartBlock(card, `${idx}-main-radar`, mod.module+" — Spider Chart", moduleFloatData);
-            }
-
             if(moduleFloatData.length>0){
                 createChartBlock(card, `${idx}-main`, mod.module+" — Activities", moduleFloatData);
             }
@@ -428,20 +431,6 @@ function renderModule(mod,idx){
             eval(exe);
         });
     };
-}
-
-function createRadarChartBlock(card,id,title,data){
-    const canvasId=`radar-${id}`;
-    const radarArea=document.createElement("div");
-    radarArea.className="chart-area";
-    radarArea.innerHTML=`
-        <div class="chart-header">
-            <h3 class="chart-title">🕸️ ${title}</h3>
-        </div>
-        <div class="chart-wrapper"><canvas id="${canvasId}"></canvas></div>
-    `;
-    card.appendChild(radarArea);
-    setTimeout(()=>createOrUpdateRadarChart(canvasId,data,title),0);
 }
 
 function createChartBlock(card,id,title,data){
@@ -467,45 +456,6 @@ function createChartBlock(card,id,title,data){
         chartArea.querySelectorAll("button").forEach(b=>b.classList.toggle("active",b===btn));
         createOrUpdateChart(canvasId,data,type);
     });
-}
-
-function createOrUpdateRadarChart(canvasId,data,title){
-    const canvas=document.getElementById(canvasId); if(!canvas) return;
-    if(charts.has(canvasId)){ charts.get(canvasId).destroy(); charts.delete(canvasId); }
-    const ctx=canvas.getContext("2d"); if(!ctx) return;
-    const radarData = data.slice(0, 8).map(d => ({ label: d.name, value: Number(d.value) || 0 }));
-    const chart=new Chart(ctx,{
-        type:"radar",
-        data:{
-            labels: radarData.map(d => d.label),
-            datasets:[{
-                label: title,
-                data: radarData.map(d => d.value),
-                backgroundColor:"rgba(11,111,164,0.2)",
-                borderColor:"#0b6fa4",
-                pointBackgroundColor:"#0b6fa4",
-                pointBorderColor:"#fff",
-                pointRadius:4,
-                pointHoverRadius:5
-            }]
-        },
-        options:{
-            responsive:true,
-            maintainAspectRatio:false,
-            plugins:{ legend:{ display:true, position:"bottom" } },
-            scales:{
-                r:{
-                    beginAtZero:true,
-                    min:0,
-                    max:100,
-                    ticks:{ stepSize:20 },
-                    grid:{ color:"rgba(148,163,184,0.25)" },
-                    angleLines:{ color:"rgba(148,163,184,0.25)" }
-                }
-            }
-        }
-    });
-    charts.set(canvasId,chart);
 }
 
 function createOrUpdateChart(canvasId,data,type){
