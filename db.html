@@ -1,132 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>IndexedDB Dropdown Example</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IndexedDB Manager</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f4f4f4; }
+    .container { max-width:600px; margin:auto; padding:20px; }
+    h1 { text-align:center; color:#0b6fa4; }
+    ul { list-style:none; padding:0; }
+    li { background:white; margin:8px 0; padding:12px; border-radius:6px; 
+         display:flex; justify-content:space-between; align-items:center;
+         box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+    button { background:#d9534f; color:white; border:none; padding:6px 10px; 
+             border-radius:4px; cursor:pointer; }
+    button:hover { background:#b52b27; }
+  </style>
 </head>
 <body>
-    <h2>Select a Name</h2>
-    <select id="nameSelect">
-        <option value="">-- Choose a name --</option>
-    </select>
-    <div id="showValue" style="margin-top: 20px;"></div>
+  <div class="container">
+    <h1>🗄 IndexedDB Manager</h1>
+    <ul id="dbList"></ul>
+  </div>
 
-<script>
-    // Open (or create) the DB
-    const dbName = 'NamesDB';
-    const storeName = 'People';
-    let db;
-    
-    function openDB() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(dbName, 1);
-            request.onupgradeneeded = function(event) {
-                db = event.target.result;
-                if (!db.objectStoreNames.contains(storeName)) {
-                    const store = db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
-                    store.createIndex('name', 'name', { unique: true });
-                }
-            };
-            request.onsuccess = function(event) {
-                db = event.target.result;
-                resolve(db);
-            };
-            request.onerror = function(event) {
-                reject(event.target.error);
-            };
-        });
+  <script>
+    async function listDatabases() {
+      const listElement = document.getElementById("dbList");
+      listElement.innerHTML = "";
+
+      if (!indexedDB.databases) {
+        listElement.innerHTML = "<li>⚠ Your browser does not support listing databases.</li>";
+        return;
+      }
+
+      const dbs = await indexedDB.databases();
+      if (dbs.length === 0) {
+        listElement.innerHTML = "<li>No IndexedDB databases found</li>";
+        return;
+      }
+
+      dbs.forEach(dbInfo => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span><strong>${dbInfo.name}</strong> (version: ${dbInfo.version})</span>
+          <button onclick="deleteDatabase('${dbInfo.name}')">Delete</button>
+        `;
+        listElement.appendChild(li);
+      });
     }
 
-    // Add demo data
-    function addDemoDataIfEmpty() {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction([storeName], 'readwrite');
-            const store = transaction.objectStore(storeName);
-
-            // Check if data exists
-            const countRequest = store.count();
-            countRequest.onsuccess = function() {
-                if (countRequest.result === 0) {
-                    // Add demo data
-                    store.add({ name: 'Alice', value: 'Math Teacher' });
-                    store.add({ name: 'Bob', value: 'Physics Teacher' });
-                    store.add({ name: 'Carlos', value: 'Biology Teacher' });
-                }
-                transaction.oncomplete = () => resolve();
-            }
-            countRequest.onerror = function(e) {
-                reject(e.target.error);
-            }
-        });
+    function deleteDatabase(name) {
+      if (!confirm(`⚠ Delete the entire database "${name}"?`)) return;
+      const req = indexedDB.deleteDatabase(name);
+      req.onsuccess = () => { alert(`✅ Database "${name}" deleted`); listDatabases(); };
+      req.onerror = () => { alert(`❌ Failed to delete database "${name}"`); };
     }
 
-    // Fetch all names
-    function fetchNames() {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction([storeName], 'readonly');
-            const store = transaction.objectStore(storeName);
-            const names = [];
-            store.openCursor().onsuccess = function(event) {
-                const cursor = event.target.result;
-                if (cursor) {
-                    names.push({ id: cursor.value.id, name: cursor.value.name });
-                    cursor.continue();
-                } else {
-                    resolve(names);
-                }
-            };
-            transaction.onerror = function(event) { reject(event.target.error); }
-        });
-    }
-
-    function fetchValueById(id) {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction([storeName], 'readonly');
-            const store = transaction.objectStore(storeName);
-            const request = store.get(Number(id));
-            request.onsuccess = function() {
-                resolve(request.result);
-            };
-            request.onerror = function(e) {
-                reject(e.target.error);
-            };
-        });
-    }
-
-    // Initialize
-    openDB()
-    .then(() => addDemoDataIfEmpty())
-    .then(() => fetchNames())
-    .then(fillDropdown);
-
-    function fillDropdown(names) {
-        const sel = document.getElementById('nameSelect');
-        names.forEach(obj => {
-            const opt = document.createElement('option');
-            opt.value = obj.id;
-            opt.textContent = obj.name;
-            sel.appendChild(opt);
-        });
-    }
-
-    document.getElementById('nameSelect').addEventListener('change', function() {
-        const id = this.value;
-        const targetDiv = document.getElementById('showValue');
-        if (!id) {
-            targetDiv.textContent = '';
-            return;
-        }
-        fetchValueById(id)
-          .then(record => {
-             targetDiv.textContent = record ? record.value : 'Not found';
-          });
-    });
-    
-    var selecedId = -1;
-    if(parent!=null && parent.document.getElementById('nameSelect')!=null){
-        selecedId = parent.document.getElementById('nameSelect').value;
-        fetchValueById(selecedId);
-    }
-</script>
+    // Load list on page load
+    listDatabases();
+  </script>
 </body>
 </html>
