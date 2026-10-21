@@ -356,13 +356,30 @@
     }
 
     // ==== Ordering ====
+    function reorderElement(el, direction) {
+      const parent = el && el.parentNode;
+      if (!parent) return;
+
+      const siblings = Array.from(parent.children);
+      const index = siblings.indexOf(el);
+      if (index === -1) return;
+
+      const targetIndex = direction === "up" ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= siblings.length) return;
+
+      const target = siblings[targetIndex];
+      if (direction === "up") {
+        parent.insertBefore(el, target);
+      } else {
+        parent.insertBefore(target, el);
+      }
+    }
+
     function moveUp(el) {
-      const prev = el.previousElementSibling;
-      if (prev) el.parentNode.insertBefore(el, prev);
+      reorderElement(el, "up");
     }
     function moveDown(el) {
-      const next = el.nextElementSibling;
-      if (next) el.parentNode.insertBefore(next, el);
+      reorderElement(el, "down");
     }
 
     // ==== Value field rendering ====
@@ -635,7 +652,7 @@ function addActivityStatus(parent,status="Pending",dateTime=""){
         request.onsuccess=()=>{ const blob=new Blob([JSON.stringify(request.result,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="bcm_db.json"; a.click(); }
     }
     function PlaningReport(){
-      document.location.href ="index.html";
+      document.location.href ="bcmadvreport2026.html";
     }
 
   /*popup wordcloud*/
@@ -677,8 +694,8 @@ function addActivityStatus(parent,status="Pending",dateTime=""){
         <td><input value="${item.word}" oninput="updateWord(${idx}, this.value)"></td>
         <td><input type="number" value="${item.value}" oninput="updateValue(${idx}, this.value)"></td>
         <td class="actions">
-          <button onclick="moveUp(${idx})">⬆</button>
-          <button onclick="moveDown(${idx})">⬇</button>
+          <button onclick="moveWordUp(${idx})">⬆</button>
+          <button onclick="moveWordDown(${idx})">⬇</button>
           <button onclick="deleteRow(${idx})">🗑</button>
         </td>
       `;
@@ -689,12 +706,12 @@ function addActivityStatus(parent,status="Pending",dateTime=""){
   function updateWord(index, val) { editingTable[index].word = val; }
   function updateValue(index, val) { editingTable[index].value = val; }
 
-  function moveUp(index) {
+  function moveWordUp(index) {
     if (index === 0) return;
     [editingTable[index - 1], editingTable[index]] = [editingTable[index], editingTable[index - 1]];
     renderTable();
   }
-  function moveDown(index) {
+  function moveWordDown(index) {
     if (index === editingTable.length - 1) return;
     [editingTable[index + 1], editingTable[index]] = [editingTable[index], editingTable[index + 1]];
     renderTable();
