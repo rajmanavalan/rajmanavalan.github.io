@@ -13,8 +13,18 @@ h1 { text-align:center; color:var(--primary);}
 .module-card h2 { margin:0 0 10px 0; color:var(--primary);}
 .activity { margin-bottom:16px; }
 .activity label { font-weight:bold; color:#333;}
-.activity input[type="text"], .activity input[type="number"] { width:100%; padding:6px; border:1px solid #ccc; border-radius:4px; background:#eee; color:#555;}
-.activity input[readonly], .activity input:disabled { background:#eee; color:#666; cursor:not-allowed;}
+.activity-value-card {
+  background: #ffffff;
+  border: 1px solid #dfe7ef;
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  margin-top: 8px;
+}
+.activity input[type="text"], .activity input[type="number"], .activity textarea {
+  width:100%; padding:8px 10px; border:1px solid #cfe0ef; border-radius:8px; background:#fff; color:#2a374a; box-sizing:border-box;
+}
+.activity input[readonly], .activity input:disabled { background:#f8fafc; color:#475569; cursor:not-allowed;}
 .switch { position:relative; display:inline-block; width:40px; height:20px;}
 .switch input { opacity:0; width:0; height:0;}
 .slider { position:absolute; cursor:not-allowed; top:0; left:0; right:0; bottom:0; background-color:#ccc; transition:.2s; border-radius:20px;}
@@ -66,6 +76,34 @@ input:checked+.slider:before { transform:translateX(20px);}
 .dr.disabled { background:#e2e8f0; color:#334155; }
 /*wo*/
 #wordCloud { width:70%; height:500px; border:1px solid #ccc; margin:auto; background:white; }
+.wordcloud-card {
+  background: #ffffff;
+  border: 1px solid #dfe7ef;
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  margin-top: 8px;
+}
+.wordcloud-surface {
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  border: 1px solid #dfe7ef;
+  border-radius: 8px;
+  min-height: 160px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wordcloud-surface canvas {
+  width: 100% !important;
+  height: 220px !important;
+  max-width: 100%;
+  border-radius: 8px;
+}
+.wordcloud-card .status-history {
+  margin-top: 10px;
+  margin-bottom: 0;
+}
   /* top bar area */
 .topbar { display: flex;align-items: center;gap: 12px;margin-bottom: 18px;}
 /* right actions (optional) */
@@ -203,6 +241,7 @@ function renderModule(mod,idx){
             mod.activities.forEach((act, actIdx)=>{
                 const row=document.createElement("div");
                 row.className="activity";
+                const isWordCloudType = ["wordcloud", "wc"].includes(String(act.type || "").toLowerCase());
                 let control="";
 
                 if(act.type==="boolean"){
@@ -285,41 +324,44 @@ function renderModule(mod,idx){
                     let result=stringParse(act.value,valueMap);
                     control=`${result||""}`;   
                 }
-                else if(act.type==="wordcloud"){
+                else if(act.type==="wordcloud" || act.type === "wc"){
                     let str1 = act.value;
-                    control=`<canvas id="wordCloud${actIdx}" ></canvas>`;
+                    control=`<div class="wordcloud-surface"><canvas id="wordCloud${actIdx}" ></canvas></div>`;
                     let result=stringParse(str1,valueMap);
                     wordcloudex.push(`generateWordCloud('wordCloud${actIdx}','${result}')`);
                 }
                 else{
                     control=`<input type="text" value="${act.value||""}" readonly>`;
                 }
-                if(act.type==="wordcloud"){
-                    row.innerHTML=`${control}`;
-                }
-                else{
-                    row.innerHTML=`<label>${act.label||"Activity"}  ${act.keyName!==""?"("+ act.keyName + ")": "" } :</label> ${control}`
-                }
 
                 const statusText = formatStatusHistory(act.statusActivities || []);
 
-                // ✅ Build base content first
-                let html_s = `
-                <label>${act.label || "Activity"} ${act.keyName ? "(" + act.keyName + ")" : ""} :</label>
-                ${control}
-                `;
+                if (isWordCloudType) {
+                    row.innerHTML = `
+                        <div class="wordcloud-card">
+                            ${control}
+                            ${statusText && statusText.trim() !== "" ? `
+                                <div class="status-history">
+                                    <div style="font-weight:700; margin-bottom:8px;">Status History for ${act.label || "Activity"} :</div>
+                                    ${statusText}
+                                </div>` : ""}
+                        </div>
+                    `;
+                } else {
+                    let html_s = `
+                    <label>${act.label || "Activity"} ${act.keyName ? "(" + act.keyName + ")" : ""} :</label>
+                    <div class="activity-value-card">
+                        ${control}
+                        ${statusText && statusText.trim() !== "" ? `
+                        <div class="status-history">
+                            <div style="font-weight:700; margin-bottom:8px;">Status History for ${act.label || "Activity"} :</div>
+                            ${statusText}
+                        </div>` : ""}
+                    </div>
+                    `;
 
-                // ✅ Append status ONLY if it exists
-                if (statusText && statusText.trim() !== "") {
-                html_s += `
-                <div class="status-history">
-                    <div style="font-weight:700; margin-bottom:8px;">Status History for ${act.label || "Activity"} :</div>
-                    ${statusText}
-                </div>`;
+                    row.innerHTML = html_s;
                 }
-
-                // ✅ Assign only ONCE
-                row.innerHTML = html_s;
 
                 
 
