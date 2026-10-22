@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cleaning Activity Tracker</title>
+
+<style>
+:root{
+    --success:#22c55e;
+    --warning:#f59e0b;
+    --danger:#ef4444;
+    --primary:#2563eb;
+    --purple:#8b5cf6;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    padding:20px;
+    font-family:Segoe UI, Arial, sans-serif;
+    background:#f3f4f6;
+}
+
+h1{
+    margin-top:0;
+    color:#1f2937;
+}
+
+.header{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+}
+
+input{
+    padding:10px;
+    border:1px solid #d1d5db;
+    border-radius:8px;
+    min-width:220px;
+}
+
+button{
+    border:none;
+    padding:10px 14px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.btn-primary{
+    background:var(--primary);
+    color:white;
+}
+
+.stats{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+}
+
+.stat{
+    background:white;
+    padding:15px;
+    border-radius:12px;
+    min-width:180px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.stat h3{
+    margin:0 0 8px 0;
+    font-size:15px;
+}
+
+.stat div{
+    font-size:26px;
+    font-weight:bold;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+    gap:18px;
+}
+
+.card{
+    background:white;
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+
+.card h3{
+    margin-top:0;
+}
+
+.status{
+    display:inline-block;
+    padding:8px 14px;
+    border-radius:20px;
+    color:white;
+    font-weight:bold;
+    margin-top:12px;
+}
+
+.green{
+    background:var(--success);
+}
+
+.amber{
+    background:var(--warning);
+}
+
+.red{
+    background:var(--danger);
+}
+
+.actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:15px;
+}
+
+.cleanBtn{
+    background:var(--success);
+    color:white;
+}
+
+.dateBtn{
+    background:var(--primary);
+    color:white;
+}
+
+.renameBtn{
+    background:var(--purple);
+    color:white;
+}
+
+.deleteBtn{
+    background:var(--danger);
+    color:white;
+}
+
+.info{
+    margin-top:8px;
+    color:#4b5563;
+}
+
+.overdue{
+    color:var(--danger);
+    font-weight:bold;
+}
+
+@media(max-width:600px){
+
+    .header{
+        flex-direction:column;
+    }
+
+    input{
+        width:100%;
+    }
+}
+</style>
+</head>
+<body>
+
+<h1>🧹 Cleaning Activity Tracker</h1>
+
+<div class="stats">
+
+    <div class="stat">
+        <h3>Total Areas</h3>
+        <div id="totalAreas">0</div>
+    </div>
+
+    <div class="stat">
+        <h3>Cleaning Due</h3>
+        <div id="dueCount">0</div>
+    </div>
+
+</div>
+
+<div class="header">
+
+    <input
+        type="text"
+        id="areaName"
+        placeholder="Area / Equipment Name">
+
+    <button class="btn-primary"
+            onclick="addArea()">
+        Add Cleaning Item
+    </button>
+
+    <input
+        type="text"
+        id="searchBox"
+        placeholder="Search..."
+        onkeyup="loadAreas()">
+
+</div>
+
+<div id="cards" class="cards"></div>
+
+<script>
+
+let db;
+
+const request = indexedDB.open("CleaningTrackerDB", 1);
+
+request.onupgradeneeded = function(event){
+
+    db = event.target.result;
+
+    if(!db.objectStoreNames.contains("areas")){
+
+        let store = db.createObjectStore(
+            "areas",
+            {
+                keyPath:"id",
+                autoIncrement:true
+            }
+        );
+
+        store.createIndex(
+            "name",
+            "name",
+            { unique:false }
+        );
+    }
+};
+
+request.onsuccess = function(event){
+
+    db = event.target.result;
+
+    loadAreas();
+};
+
+function addArea(){
+
+    const name = document
+        .getElementById("areaName")
+        .value
+        .trim();
+
+    if(!name){
+
+        alert("Please enter an area name.");
+        return;
+    }
+
+    let tx = db.transaction(
+        ["areas"],
+        "readwrite"
+    );
+
+    let store = tx.objectStore("areas");
+
+    store.add({
+        name:name,
+        lastCleaned:new Date().toISOString()
+    });
+
+    tx.oncomplete = function(){
+
+        document.getElementById("areaName").value = "";
+
+        loadAreas();
+    };
+}
+
+function getStatus(days){
+
+    if(days >= 7){
+
+        return {
+            cls:"red",
+            text:"Cleaning Due"
+        };
+    }
+
+    if(days >= 5){
+
+        return {
+            cls:"amber",
+            text:"Cleaning Due Soon"
+        };
+    }
+
+    return {
+        cls:"green",
+        text:"Recently Cleaned"
+    };
+}
+
+function markCleaned(id){
+
+    let tx = db.transaction(
+        ["areas"],
+        "readwrite"
+    );
+
+    let store = tx.objectStore("areas");
+
+    let req = store.get(id);
+
+    req.onsuccess = function(){
+
+        let item = req.result;
+
+        item.lastCleaned =
+            new Date().toISOString();
+
+        store.put(item);
+
+        loadAreas();
+    };
+}
+
+function editDate(id){
+
+    let tx = db.transaction(
+        ["areas"],
+        "readwrite"
+    );
+
+    let store = tx.objectStore("areas");
+
+    let req = store.get(id);
+
+    req.onsuccess = function(){
+
+        let item = req.result;
+
+        let currentDate =
+            item.lastCleaned.substring(0,10);
+
+        let newDate = prompt(
+            "Enter cleaning date (YYYY-MM-DD)",
+            currentDate
+        );
+
+        if(!newDate)
+            return;
+
+        let dt = new Date(newDate);
+
+        if(isNaN(dt)){
+
+            alert("Invalid date");
+            return;
+        }
+
+        item.lastCleaned =
+            dt.toISOString();
+
+        store.put(item);
+
+        loadAreas();
+    };
+}
+
+function renameArea(id){
+
+    let tx = db.transaction(
+        ["areas"],
+        "readwrite"
+    );
+
+    let store = tx.objectStore("areas");
+
+    let req = store.get(id);
+
+    req.onsuccess = function(){
+
+        let item = req.result;
+
+        let newName = prompt(
+            "Enter new name",
+            item.name
+        );
+
+        if(!newName)
+            return;
+
+        newName = newName.trim();
+
+        if(newName.length === 0){
+
+            alert(
+                "Name cannot be empty."
+            );
+
+            return;
+        }
+
+        item.name = newName;
+
+        store.put(item);
+
+        loadAreas();
+    };
+}
+
+function deleteArea(id){
+
+    if(!confirm(
+        "Delete this cleaning item?"
+    ))
+        return;
+
+    let tx = db.transaction(
+        ["areas"],
+        "readwrite"
+    );
+
+    tx.objectStore("areas")
+      .delete(id);
+
+    tx.oncomplete = function(){
+
+        loadAreas();
+    };
+}
+
+function loadAreas(){
+
+    let tx = db.transaction(
+        ["areas"],
+        "readonly"
+    );
+
+    let store =
+        tx.objectStore("areas");
+
+    let req = store.getAll();
+
+    req.onsuccess = function(){
+
+        let data = req.result;
+
+        let search = document
+            .getElementById("searchBox")
+            .value
+            .toLowerCase();
+
+        if(search){
+
+            data = data.filter(x =>
+                x.name.toLowerCase()
+                .includes(search)
+            );
+        }
+
+        render(data);
+    };
+}
+
+function render(data){
+
+    let html = "";
+    let dueCount = 0;
+
+    data.sort((a,b)=>{
+
+        let d1 =
+            Math.floor(
+                (new Date() -
+                 new Date(a.lastCleaned))
+                 /(1000*60*60*24)
+            );
+
+        let d2 =
+            Math.floor(
+                (new Date() -
+                 new Date(b.lastCleaned))
+                 /(1000*60*60*24)
+            );
+
+        return d2 - d1;
+    });
+
+    data.forEach(item=>{
+
+        const days =
+            Math.floor(
+                (new Date() -
+                new Date(item.lastCleaned))
+                /(1000*60*60*24)
+            );
+
+        const status =
+            getStatus(days);
+
+        if(status.cls==="red")
+            dueCount++;
+
+        const overdue =
+            days > 7
+            ? `(Overdue by ${days-7} day(s))`
+            : "";
+
+        html += `
+        <div class="card">
+
+            <h3 >${item.name}&nbsp;<span style="cursor:pointer;" onclick="renameArea(${item.id})">✏️</span></h3> 
+
+            <div class="info">
+                Last Cleaned:
+                <strong>
+                ${new Date(item.lastCleaned)
+                .toLocaleDateString()}
+                </strong>
+            </div>
+
+            <div class="info">
+                Days Since Cleaning:
+                <strong>${days}</strong>
+            </div>
+
+            <div class="info overdue">
+                ${overdue}
+            </div>
+
+            <div class="status ${status.cls}">
+                ${status.text}
+            </div>
+
+            <div class="actions">
+
+                <button
+                    class="cleanBtn"
+                    onclick="markCleaned(${item.id})">
+                    ✓ Cleaned Today
+                </button>
+
+                <button
+                    class="dateBtn"
+                    onclick="editDate(${item.id})">
+                    📅 Change Date
+                </button>
+
+                <button
+                    class="deleteBtn"
+                    onclick="deleteArea(${item.id})">
+                    🗑 Delete
+                </button>
+
+            </div>
+
+        </div>`;
+    });
+
+    document.getElementById("cards")
+        .innerHTML = html;
+
+    document.getElementById("totalAreas")
+        .innerText = data.length;
+
+    document.getElementById("dueCount")
+        .innerText = dueCount;
+}
+
+</script>
+
+</body>
+</html>
