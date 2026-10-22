@@ -158,7 +158,39 @@ request.onsuccess=function(e){
     db=e.target.result;
     loadDevices();
 };
+function editName(id){
 
+    let tx = db.transaction(["devices"], "readwrite");
+    let store = tx.objectStore("devices");
+
+    let req = store.get(id);
+
+    req.onsuccess = function(){
+
+        let item = req.result;
+
+        let newName = prompt(
+            "Enter new device name",
+            item.name
+        );
+
+        if(!newName)
+            return;
+
+        newName = newName.trim();
+
+        if(newName.length === 0){
+            alert("Device name cannot be empty");
+            return;
+        }
+
+        item.name = newName;
+
+        store.put(item);
+
+        loadDevices();
+    };
+}
 function addDevice(){
 
     const name=document.getElementById("deviceName").value.trim();
@@ -310,7 +342,7 @@ function render(data){
         html+=`
         <div class="card">
 
-            <h3>${d.name}</h3>
+            <h3 >${d.name}&nbsp;<span style="cursor:pointer;" onclick="editName(${d.id})">✏️</span></h3> 
 
             <div>
                 Last Charged:
@@ -337,7 +369,7 @@ function render(data){
 
                 <button onclick="editDate(${d.id})"
                         style="background:#3b82f6;color:white;">
-                    Change Date
+                    📅 Date
                 </button>
 
                 <button class="deleteBtn"
