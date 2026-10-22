@@ -251,6 +251,42 @@ function loadDevices(){
         render(data);
     };
 }
+function editDate(id){
+
+    let tx=db.transaction(["devices"],"readwrite");
+    let store=tx.objectStore("devices");
+
+    let req=store.get(id);
+
+    req.onsuccess=function(){
+
+            let item=req.result;
+
+            let currentDate =
+                item.lastCharged.substring(0,10);
+
+            let newDate = prompt(
+                "Enter charge date (YYYY-MM-DD)",
+                currentDate
+            );
+
+            if(!newDate)
+                return;
+
+            let dt = new Date(newDate);
+
+            if(isNaN(dt)){
+                alert("Invalid date");
+                return;
+            }
+
+            item.lastCharged = dt.toISOString();
+
+            store.put(item);
+
+            loadDevices();
+        };
+}
 
 function render(data){
 
@@ -296,12 +332,17 @@ function render(data){
 
                 <button class="chargeBtn"
                         onclick="chargeNow(${d.id})">
-                        Charged Now
+                    Charged Now
+                </button>
+
+                <button onclick="editDate(${d.id})"
+                        style="background:#3b82f6;color:white;">
+                    Change Date
                 </button>
 
                 <button class="deleteBtn"
                         onclick="deleteDevice(${d.id})">
-                        Delete
+                    Delete
                 </button>
 
             </div>
