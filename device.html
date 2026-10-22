@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Device Charge Tracker</title>
+
+<style>
+:root{
+    --success:#22c55e;
+    --warning:#f59e0b;
+    --danger:#ef4444;
+    --primary:#2563eb;
+}
+
+body{
+    margin:0;
+    padding:20px;
+    font-family:Segoe UI,Arial,sans-serif;
+    background:#f3f4f6;
+}
+
+.header{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+}
+
+input{
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
+}
+
+button{
+    border:none;
+    padding:10px 14px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.btn-primary{
+    background:var(--primary);
+    color:white;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:18px;
+}
+
+.card{
+    background:white;
+    border-radius:15px;
+    padding:18px;
+    box-shadow:0 4px 10px rgba(0,0,0,.1);
+}
+
+.status{
+    padding:6px 12px;
+    border-radius:20px;
+    display:inline-block;
+    color:white;
+    font-weight:bold;
+    margin:10px 0;
+}
+
+.green{background:var(--success);}
+.amber{background:var(--warning);}
+.red{background:var(--danger);}
+
+.actions{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+
+.chargeBtn{
+    background:var(--success);
+    color:#fff;
+}
+
+.deleteBtn{
+    background:var(--danger);
+    color:#fff;
+}
+
+.stats{
+    display:flex;
+    gap:15px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+.stat{
+    background:white;
+    padding:15px;
+    border-radius:12px;
+    min-width:150px;
+    box-shadow:0 2px 6px rgba(0,0,0,.1);
+}
+
+h1{
+    margin-top:0;
+}
+</style>
+</head>
+<body>
+
+<h1>🔋 Device Charge Tracker</h1>
+
+<div class="stats">
+    <div class="stat">
+        <strong>Total Devices</strong>
+        <div id="totalDevices">0</div>
+    </div>
+
+    <div class="stat">
+        <strong>Recharge Needed</strong>
+        <div id="rechargeNeeded">0</div>
+    </div>
+</div>
+
+<div class="header">
+    <input id="deviceName" type="text" placeholder="Device Name">
+
+    <button class="btn-primary" onclick="addDevice()">
+        Add Device
+    </button>
+
+    <input id="searchBox" type="text"
+           placeholder="Search Device"
+           onkeyup="loadDevices()">
+</div>
+
+<div id="cards" class="cards"></div>
+
+<script>
+
+let db;
+
+const request=indexedDB.open("DeviceChargeDB",1);
+
+request.onupgradeneeded=function(e){
+    db=e.target.result;
+
+    if(!db.objectStoreNames.contains("devices")){
+        let store=db.createObjectStore("devices",
+        {keyPath:"id",autoIncrement:true});
+
+        store.createIndex("name","name",{unique:false});
+    }
+};
+
+request.onsuccess=function(e){
+    db=e.target.result;
+    loadDevices();
+};
+
+function addDevice(){
+
+    const name=document.getElementById("deviceName").value.trim();
+
+    if(!name){
+        alert("Enter device name");
+        return;
+    }
+
+    let tx=db.transaction(["devices"],"readwrite");
+    let store=tx.objectStore("devices");
+
+    store.add({
+        name:name,
+        lastCharged:new Date().toISOString()
+    });
+
+    tx.oncomplete=function(){
+        document.getElementById("deviceName").value="";
+        loadDevices();
+    };
+}
+
+function getStatus(days){
+
+    if(days >= 6){
+        return {cls:"red",text:"Recharge Needed"};
+    }
+
+    if(days >= 4){
+        return {cls:"amber",text:"Soon Recharge"};
+    }
+
+    return {cls:"green",text:"OK"};
+}
+
+function chargeNow(id){
+
+    let tx=db.transaction(["devices"],"readwrite");
+    let store=tx.objectStore("devices");
+
+    let req=store.get(id);
+
+    req.onsuccess=function(){
+
+        let item=req.result;
+
+        item.lastCharged=new Date().toISOString();
+
+        store.put(item);
+
+        loadDevices();
+    };
+}
+
+function deleteDevice(id){
+
+    if(!confirm("Delete device?"))
+        return;
+
+    let tx=db.transaction(["devices"],"readwrite");
+
+    tx.objectStore("devices").delete(id);
+
+    tx.oncomplete=function(){
+        loadDevices();
+    };
+}
+
+function loadDevices(){
+
+    let tx=db.transaction(["devices"],"readonly");
+    let store=tx.objectStore("devices");
+
+    let req=store.getAll();
+
+    req.onsuccess=function(){
+
+        let data=req.result;
+
+        let search=document
+            .getElementById("searchBox")
+            .value.toLowerCase();
+
+        if(search){
+            data=data.filter(x =>
+                x.name.toLowerCase().includes(search));
+        }
+
+        render(data);
+    };
+}
+
+function render(data){
+
+    let html="";
+    let redCount=0;
+
+    data.sort((a,b)=>a.name.localeCompare(b.name));
+
+    data.forEach(d=>{
+
+        let days=Math.floor(
+            (new Date() - new Date(d.lastCharged))
+            /(1000*60*60*24)
+        );
+
+        let status=getStatus(days);
+
+        if(status.cls==="red")
+            redCount++;
+
+        html+=`
+        <div class="card">
+
+            <h3>${d.name}</h3>
+
+            <div>
+                Last Charged:
+                <strong>
+                ${new Date(d.lastCharged).toLocaleDateString()}
+                </strong>
+            </div>
+
+            <div>
+                Days Since Charge:
+                <strong>${days}</strong>
+            </div>
+
+            <div class="status ${status.cls}">
+                ${status.text}
+            </div>
+
+            <div class="actions">
+
+                <button class="chargeBtn"
+                        onclick="chargeNow(${d.id})">
+                        Charged Now
+                </button>
+
+                <button class="deleteBtn"
+                        onclick="deleteDevice(${d.id})">
+                        Delete
+                </button>
+
+            </div>
+
+        </div>
+        `;
+    });
+
+    document.getElementById("cards").innerHTML=html;
+
+    document.getElementById("totalDevices")
+        .innerText=data.length;
+
+    document.getElementById("rechargeNeeded")
+        .innerText=redCount;
+}
+</script>
+
+</body>
+</html>
