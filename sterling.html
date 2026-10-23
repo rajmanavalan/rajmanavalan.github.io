@@ -184,6 +184,7 @@
             align-items: center;
             padding: 10px;
             border-bottom: 1px solid #eee;
+            gap: 12px;
         }
 
         .item:last-child {
@@ -257,6 +258,17 @@
                 <option>Other</option>
             </select>
 
+            <div id="landSaleFields" class="flex" style="display:none; width:100%;">
+                <select id="landPriceType">
+                    <option value="acre">Acre</option>
+                    <option value="sqft">Sqft</option>
+                </select>
+
+                <input id="landPriceValue" type="number" placeholder="Land price per unit ₹">
+
+                <input id="landUnitCount" type="number" placeholder="No of units">
+            </div>
+
             <input id="incomeAmount" type="number" placeholder="Amount ₹">
 
             <button class="success" onclick="addIncome()">
@@ -294,8 +306,9 @@
     <div class="grid">
 
         <div class="card">
-            <h3>💰 Total Income</h3>
+            <h3 id="cardIncomeTitle">💰 Total Income</h3>
             <div id="cardIncome" class="value">₹0</div>
+            <div id="cardIncomeMeta" style="margin-top:8px; font-size:12px; color:#4b5563;">0 units</div>
         </div>
 
         <div class="card">
@@ -486,27 +499,60 @@
                 };
         }
 
+        function getLandSaleAmount() {
+            const landPriceValue = Number(document.getElementById("landPriceValue").value || 0);
+            const landUnitCount = Number(document.getElementById("landUnitCount").value || 0);
+            return landPriceValue * landUnitCount;
+        }
+
+        function updateLandSaleFields() {
+            const isLandSale = document.getElementById("incomeType").value === "Land Sale";
+            const landSaleFields = document.getElementById("landSaleFields");
+            const incomeAmountInput = document.getElementById("incomeAmount");
+
+            landSaleFields.style.display = isLandSale ? "flex" : "none";
+            incomeAmountInput.placeholder = isLandSale ? "Auto-calculated amount" : "Amount ₹";
+
+            if (isLandSale) {
+                const calculatedAmount = getLandSaleAmount();
+                if (calculatedAmount) {
+                    incomeAmountInput.value = calculatedAmount;
+                }
+            } else {
+                incomeAmountInput.value = "";
+            }
+        }
+
         function addIncome() {
 
             const type =
                 document.getElementById("incomeType").value;
 
-            const amount =
-                Number(document.getElementById("incomeAmount").value);
+            const incomeAmountInput = document.getElementById("incomeAmount");
+            let amount = Number(incomeAmountInput.value);
 
-            if (!amount) return;
+            if (type === "Land Sale") {
+                amount = getLandSaleAmount();
+                if (!amount) return;
+                incomeAmountInput.value = amount;
+            } else if (!amount) {
+                return;
+            }
 
             let tx =
                 db.transaction(["income"], "readwrite");
 
             tx.objectStore("income").add({
                 type: type,
-                amount: amount
+                amount: amount,
+                unitType: type === "Land Sale" ? document.getElementById("landPriceType").value : "",
+                unitCount: type === "Land Sale" ? Number(document.getElementById("landUnitCount").value || 0) : 0,
+                pricePerUnit: type === "Land Sale" ? Number(document.getElementById("landPriceValue").value || 0) : 0
             });
 
             tx.oncomplete = function () {
 
-                incomeAmount.value = "";
+                incomeAmountInput.value = "";
                 renderAll();
             };
         }
@@ -559,6 +605,12 @@
 
         let inrCharts = [];
         let gbpCharts = [];
+
+        document.getElementById('incomeType').addEventListener('change', updateLandSaleFields);
+        document.getElementById('landPriceType').addEventListener('input', updateLandSaleFields);
+        document.getElementById('landPriceValue').addEventListener('input', updateLandSaleFields);
+        document.getElementById('landUnitCount').addEventListener('input', updateLandSaleFields);
+        updateLandSaleFields();
 
         document.addEventListener('click', function (event) {
             const button = event.target.closest('.tab-button');
@@ -781,9 +833,27 @@
                 let incomeHtml = "";
                 let expenseHtml = "";
 
+                let landSaleTotal = 0;
+                let landSaleUnits = 0;
+                let landSalePricePerUnit = 0;
+                let landSaleUnitType = "Acre";
+
                 income.forEach(x => {
 
                     totalIncome += x.amount;
+
+                    if (x.type === "Land Sale") {
+                        const pricePerUnit = Number(x.pricePerUnit || 0);
+                        const units = Number(x.unitCount || 0);
+                        landSaleTotal += Number(x.amount || 0);
+                        landSaleUnits += units;
+                        if (pricePerUnit > 0) {
+                            landSalePricePerUnit = pricePerUnit;
+                        }
+                        if (x.unitType) {
+                            landSaleUnitType = x.unitType.toLowerCase() === "sqft" ? "Sqft" : "Acre";
+                        }
+                    }
 
                     incomeHtml += `
                                 <div class="item">
@@ -856,7 +926,15 @@
 
                 /* Dashboard updates */
 
-                cardIncome.innerText = formatINR(totalIncome);
+                if (landSaleTotal > 0) {
+                    cardIncomeTitle.innerText = "🏷️ Land Sale";
+                    cardIncome.innerText = formatINR(landSaleTotal);
+                    cardIncomeMeta.innerText = `${landSaleUnits} ${landSaleUnitType} • ${formatINR(landSalePricePerUnit)}/unit`;
+                } else {
+                    cardIncomeTitle.innerText = "💰 Total Income";
+                    cardIncome.innerText = formatINR(totalIncome);
+                    cardIncomeMeta.innerText = `${income.length} income entries`;
+                }
 
                 cardExpense.innerText = formatINR(totalExpense);
 
