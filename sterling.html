@@ -111,6 +111,46 @@
             margin-top: 25px;
         }
 
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .chart-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            background: #e5e7eb;
+            color: #1f2937;
+            border: none;
+            border-radius: 999px;
+            padding: 9px 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, var(--primary), #1d4ed8);
+            color: white;
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.22);
+        }
+
+        .chart-panel {
+            display: none;
+        }
+
+        .chart-panel.active {
+            display: block;
+        }
+
         .chart-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -310,15 +350,45 @@
     </div>
 
     <div class="section chart-section">
-        <h2>Modern Comparison Charts</h2>
-        <div class="chart-grid">
-            <div class="chart-card">
-                <h3>INR Overview</h3>
-                <canvas id="inrChart"></canvas>
+        <div class="chart-header">
+            <h2>Modern Comparison Charts</h2>
+            <div class="chart-tabs">
+                <button class="tab-button active" data-currency="inr">INR</button>
+                <button class="tab-button" data-currency="gbp">GBP</button>
             </div>
-            <div class="chart-card">
-                <h3>GBP Overview</h3>
-                <canvas id="gbpChart"></canvas>
+        </div>
+
+        <div id="inrChartPanel" class="chart-panel active">
+            <div class="chart-grid">
+                <div class="chart-card">
+                    <h3>INR Summary Flow</h3>
+                    <canvas id="inrSummaryChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>INR Tax Breakdown</h3>
+                    <canvas id="inrTaxChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>INR Income vs Expense</h3>
+                    <canvas id="inrMixChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="gbpChartPanel" class="chart-panel">
+            <div class="chart-grid">
+                <div class="chart-card">
+                    <h3>GBP Conversion Overview</h3>
+                    <canvas id="gbpSummaryChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>GBP Tax Impact</h3>
+                    <canvas id="gbpTaxChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>GBP Value Mix</h3>
+                    <canvas id="gbpMixChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -487,22 +557,47 @@
             tx.oncomplete = renderAll;
         }
 
-        let inrChart = null;
-        let gbpChart = null;
+        let inrCharts = [];
+        let gbpCharts = [];
 
-        function renderCharts(inrValues, gbpValues) {
+        document.addEventListener('click', function (event) {
+            const button = event.target.closest('.tab-button');
+            if (!button) return;
+
+            const currency = button.dataset.currency;
+
+            document.querySelectorAll('.tab-button').forEach(tab => {
+                tab.classList.toggle('active', tab === button);
+            });
+
+            document.getElementById('inrChartPanel').classList.toggle('active', currency === 'inr');
+            document.getElementById('gbpChartPanel').classList.toggle('active', currency === 'gbp');
+        });
+
+        function destroyCharts(charts) {
+            charts.forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            charts.length = 0;
+        }
+
+        function renderCharts(inrValues, gbpValues, inrBreakdown, gbpBreakdown, totalIncome, totalExpense) {
 
             if (!window.Chart) return;
 
-            const inrCtx = document.getElementById('inrChart');
-            const gbpCtx = document.getElementById('gbpChart');
+            destroyCharts(inrCharts);
+            destroyCharts(gbpCharts);
 
-            if (!inrCtx || !gbpCtx) return;
+            const inrSummaryCtx = document.getElementById('inrSummaryChart');
+            const inrTaxCtx = document.getElementById('inrTaxChart');
+            const inrMixCtx = document.getElementById('inrMixChart');
+            const gbpSummaryCtx = document.getElementById('gbpSummaryChart');
+            const gbpTaxCtx = document.getElementById('gbpTaxChart');
+            const gbpMixCtx = document.getElementById('gbpMixChart');
 
-            if (inrChart) inrChart.destroy();
-            if (gbpChart) gbpChart.destroy();
+            if (!inrSummaryCtx || !inrTaxCtx || !inrMixCtx || !gbpSummaryCtx || !gbpTaxCtx || !gbpMixCtx) return;
 
-            inrChart = new Chart(inrCtx, {
+            inrCharts.push(new Chart(inrSummaryCtx, {
                 type: 'line',
                 data: {
                     labels: ['Income', 'Expense', 'TDS', 'India CGT', 'Net INR', 'Final INR'],
@@ -522,57 +617,126 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
                         y: {
                             beginAtZero: false,
-                            ticks: {
-                                callback: value => '₹' + Number(value).toLocaleString('en-IN')
-                            }
+                            ticks: { callback: value => '₹' + Number(value).toLocaleString('en-IN') }
                         }
                     }
                 }
-            });
+            }));
 
-            gbpChart = new Chart(gbpCtx, {
+            inrCharts.push(new Chart(inrTaxCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['GBP Value', 'UK CGT', 'Net GBP'],
+                    labels: ['TDS', 'India CGT', 'Adjustment'],
                     datasets: [{
-                        label: 'GBP',
-                        data: gbpValues,
-                        borderRadius: 10,
-                        backgroundColor: [
-                            'rgba(22, 163, 74, 0.8)',
-                            'rgba(217, 119, 6, 0.8)',
-                            'rgba(37, 99, 235, 0.8)'
-                        ],
-                        borderColor: [
-                            '#16a34a',
-                            '#d97706',
-                            '#2563eb'
-                        ],
-                        borderWidth: 1.5
+                        label: 'INR Tax',
+                        data: inrBreakdown,
+                        backgroundColor: ['#60a5fa', '#f59e0b', '#34d399'],
+                        borderRadius: 10
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
                         y: {
                             beginAtZero: false,
-                            ticks: {
-                                callback: value => '£' + Number(value).toLocaleString('en-GB', { maximumFractionDigits: 2 })
-                            }
+                            ticks: { callback: value => '₹' + Number(value).toLocaleString('en-IN') }
                         }
                     }
                 }
-            });
+            }));
+
+            inrCharts.push(new Chart(inrMixCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Income', 'Expenses', 'Net'],
+                    datasets: [{
+                        data: [Math.max(totalIncome, 0), Math.max(totalExpense, 0), Math.max(totalIncome - totalExpense, 0)],
+                        backgroundColor: ['#2563eb', '#f87171', '#34d399'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            }));
+
+            gbpCharts.push(new Chart(gbpSummaryCtx, {
+                type: 'line',
+                data: {
+                    labels: ['GBP Value', 'UK CGT', 'Net GBP'],
+                    datasets: [{
+                        label: 'GBP',
+                        data: gbpValues,
+                        borderColor: '#16a34a',
+                        backgroundColor: 'rgba(22, 163, 74, 0.12)',
+                        fill: true,
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#16a34a',
+                        tension: 0.38
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: { callback: value => '£' + Number(value).toLocaleString('en-GB', { maximumFractionDigits: 2 }) }
+                        }
+                    }
+                }
+            }));
+
+            gbpCharts.push(new Chart(gbpTaxCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['GBP Value', 'UK CGT', 'Final GBP'],
+                    datasets: [{
+                        label: 'GBP Tax',
+                        data: gbpBreakdown,
+                        backgroundColor: ['#4ade80', '#fbbf24', '#60a5fa'],
+                        borderRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: { callback: value => '£' + Number(value).toLocaleString('en-GB', { maximumFractionDigits: 2 }) }
+                        }
+                    }
+                }
+            }));
+
+            gbpCharts.push(new Chart(gbpMixCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Gross GBP', 'UK CGT', 'Net GBP'],
+                    datasets: [{
+                        data: [Math.max(gbpValues[0] || 0, 0), Math.max(gbpValues[1] || 0, 0), Math.max(gbpValues[2] || 0, 0)],
+                        backgroundColor: ['#22c55e', '#f59e0b', '#3b82f6'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            }));
         }
 
         function renderAll() {
@@ -723,7 +887,11 @@
 
                 renderCharts(
                     [totalIncome, totalExpense, tdsPaid, indiaCGT, afterIndiaTax, finalINR],
-                    [finalGBP, ukCGT, finalNetGBP]
+                    [finalGBP, ukCGT, finalNetGBP],
+                    [tdsPaid, indiaCGT, Math.abs(adjustment)],
+                    [finalGBP, ukCGT, finalNetGBP],
+                    totalIncome,
+                    totalExpense
                 );
 
             });
