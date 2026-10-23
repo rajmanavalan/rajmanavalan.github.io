@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Planning Dashboard</title>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --bg: #f3f4f6;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--bg);
+            font-family: Segoe UI, Arial, sans-serif;
+        }
+
+        h1,
+        h2 {
+            color: #1f2937;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, .08);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            font-size: 15px;
+            color: #555;
+        }
+
+        .value {
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+
+        .primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .success {
+            background: var(--success);
+            color: white;
+        }
+
+        .danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .flex {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .flex>* {
+            flex: 1;
+        }
+
+        .list {
+            margin-top: 15px;
+        }
+
+        .chart-section {
+            margin-top: 25px;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .chart-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 18px;
+            padding: 18px 18px 12px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .chart-card h3 {
+            margin: 0 0 12px;
+            font-size: 17px;
+            color: #1f2937;
+        }
+
+        .chart-card canvas {
+            width: 100% !important;
+            height: 260px !important;
+            display: block;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .smallbtn {
+            padding: 5px 10px;
+            margin-left: 8px;
+        }
+
+        @media(max-width:700px) {
+            .flex {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>💷 UK and NRI Dashboard</h1>
+
+    <div class="section">
+
+        <h2>Configuration</h2>
+
+        <div class="grid">
+
+            <div>
+                <label>TDS %</label>
+                <input id="tdsPercent" type="number" value="20">
+            </div>
+
+            <div>
+                <label>India Capital Gain Tax %</label>
+                <input id="indiaTax" type="number" value="12.5">
+            </div>
+
+            <div>
+                <label>UK Capital Gain Tax %</label>
+                <input id="ukTax" type="number" value="24">
+            </div>
+
+            <div>
+                <label>INR Per GBP</label>
+                <input id="gbpRate" type="number" value="110">
+            </div>
+
+        </div>
+
+        <br>
+
+        <button class="primary" onclick="saveConfig()">
+            Save Configuration
+        </button>
+
+    </div>
+
+    <div class="section">
+
+        <h2>Income</h2>
+
+        <div class="flex">
+
+            <select id="incomeType">
+                <option>Land Sale</option>
+                <option>Salary</option>
+                <option>Interest</option>
+                <option>Savings</option>
+                <option>Other</option>
+            </select>
+
+            <input id="incomeAmount" type="number" placeholder="Amount ₹">
+
+            <button class="success" onclick="addIncome()">
+                Add Income
+            </button>
+
+        </div>
+
+        <div id="incomeList" class="list"></div>
+
+    </div>
+
+    <div class="section">
+
+        <h2>Expenses</h2>
+
+        <div class="flex">
+
+            <input id="expenseDesc" placeholder="Expense Description">
+
+            <input id="expenseAmount" type="number" placeholder="Amount ₹">
+
+            <button class="danger" onclick="addExpense()">
+                Add Expense
+            </button>
+
+        </div>
+
+        <div id="expenseList" class="list"></div>
+
+    </div>
+
+    <h2>Summary Dashboard</h2>
+
+    <div class="grid">
+
+        <div class="card">
+            <h3>💰 Total Income</h3>
+            <div id="cardIncome" class="value">₹0</div>
+        </div>
+
+        <div class="card">
+            <h3>🧾 TDS Deducted</h3>
+            <div id="cardTDS" class="value">₹0</div>
+        </div>
+
+        <div class="card">
+            <h3>💸 Total Expenses</h3>
+            <div id="cardExpense" class="value">₹0</div>
+        </div>
+
+        <div class="card">
+            <h3>🧾 Taxable</h3>
+            <div id="cardTaxable" class="value">₹0</div>
+        </div>
+
+
+
+        <div class="card">
+            <h3>🧾 Adjustment</h3>
+            <div id="cardAdjustment" class="value">₹0</div>
+        </div>
+
+
+        <div class="card">
+            <h3>🇮🇳 India CGT</h3>
+            <div id="cardIndiaCGT" class="value">₹0</div>
+        </div>
+
+        <div class="card">
+            <h3>🧾 Final INR</h3>
+            <div id="cardAfterIndia" class="value">₹0</div>
+        </div>
+
+         <div class="card">
+            <h3>🇬🇧 UK Before CGT</h3>
+            <div id="cardUKBeforeCGT" class="value">₹0</div>
+        </div>
+
+
+        <div class="card">
+            <h3>🇬🇧 UK CGT</h3>
+            <div id="cardUkCGT" class="value">₹0</div>
+        </div>
+
+        <div class="card">
+            <h3>💷 Final GBP</h3>
+            <div id="cardFinalGBP" class="value">£0</div>
+        </div>
+
+    </div>
+
+    <div class="section chart-section">
+        <h2>Modern Comparison Charts</h2>
+        <div class="chart-grid">
+            <div class="chart-card">
+                <h3>INR Overview</h3>
+                <canvas id="inrChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>GBP Overview</h3>
+                <canvas id="gbpChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="chart.js"></script>
+    <script>
+
+        let db;
+
+        const req = indexedDB.open("MoneyPlannerDB", 1);
+
+        req.onupgradeneeded = function (e) {
+
+            db = e.target.result;
+
+            if (!db.objectStoreNames.contains("config"))
+                db.createObjectStore("config", { keyPath: "id" });
+
+            if (!db.objectStoreNames.contains("income"))
+                db.createObjectStore("income",
+                    { keyPath: "id", autoIncrement: true });
+
+            if (!db.objectStoreNames.contains("expense"))
+                db.createObjectStore("expense",
+                    { keyPath: "id", autoIncrement: true });
+        };
+
+        req.onsuccess = function (e) {
+
+            db = e.target.result;
+
+            loadConfig();
+            renderAll();
+        };
+
+        function formatINR(v) {
+
+            return "₹" +
+                Number(v).toLocaleString(
+                    'en-IN',
+                    { maximumFractionDigits: 0 }
+                );
+        }
+
+        function formatGBP(v) {
+
+            return "£" +
+                Number(v).toLocaleString(
+                    'en-GB',
+                    { maximumFractionDigits: 2 }
+                );
+        }
+
+        function saveConfig() {
+
+            let tx =
+                db.transaction(["config"], "readwrite");
+
+            tx.objectStore("config").put({
+
+                id: 1,
+
+                tdsPercent: Number(
+                    document.getElementById("tdsPercent").value || 0),
+
+                indiaTax: Number(
+                    document.getElementById("indiaTax").value || 0),
+
+                ukTax: Number(
+                    document.getElementById("ukTax").value || 0),
+
+                gbpRate: Number(
+                    document.getElementById("gbpRate").value || 110)
+            });
+
+            tx.oncomplete = renderAll;
+        }
+
+        function loadConfig() {
+
+            let tx =
+                db.transaction(["config"], "readonly");
+
+            tx.objectStore("config")
+                .get(1).onsuccess = function (e) {
+
+                    const d = e.target.result;
+
+                    if (!d) return;
+
+                    tdsPercent.value = d.tdsPercent;
+                    indiaTax.value = d.indiaTax;
+                    ukTax.value = d.ukTax;
+                    gbpRate.value = d.gbpRate;
+                };
+        }
+
+        function addIncome() {
+
+            const type =
+                document.getElementById("incomeType").value;
+
+            const amount =
+                Number(document.getElementById("incomeAmount").value);
+
+            if (!amount) return;
+
+            let tx =
+                db.transaction(["income"], "readwrite");
+
+            tx.objectStore("income").add({
+                type: type,
+                amount: amount
+            });
+
+            tx.oncomplete = function () {
+
+                incomeAmount.value = "";
+                renderAll();
+            };
+        }
+
+        function addExpense() {
+
+            const desc =
+                document.getElementById("expenseDesc").value;
+
+            const amount =
+                Number(document.getElementById("expenseAmount").value);
+
+            if (!desc || !amount) return;
+
+            let tx =
+                db.transaction(["expense"], "readwrite");
+
+            tx.objectStore("expense").add({
+                description: desc,
+                amount: amount
+            });
+
+            tx.oncomplete = function () {
+
+                expenseDesc.value = "";
+                expenseAmount.value = "";
+                renderAll();
+            };
+        }
+
+        function deleteIncome(id) {
+
+            let tx =
+                db.transaction(["income"], "readwrite");
+
+            tx.objectStore("income").delete(id);
+
+            tx.oncomplete = renderAll;
+        }
+
+        function deleteExpense(id) {
+
+            let tx =
+                db.transaction(["expense"], "readwrite");
+
+            tx.objectStore("expense").delete(id);
+
+            tx.oncomplete = renderAll;
+        }
+
+        let inrChart = null;
+        let gbpChart = null;
+
+        function renderCharts(inrValues, gbpValues) {
+
+            if (!window.Chart) return;
+
+            const inrCtx = document.getElementById('inrChart');
+            const gbpCtx = document.getElementById('gbpChart');
+
+            if (!inrCtx || !gbpCtx) return;
+
+            if (inrChart) inrChart.destroy();
+            if (gbpChart) gbpChart.destroy();
+
+            inrChart = new Chart(inrCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Income', 'Expense', 'TDS', 'India CGT', 'Net INR', 'Final INR'],
+                    datasets: [{
+                        label: 'INR',
+                        data: inrValues,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.15)',
+                        fill: true,
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#2563eb',
+                        pointHoverRadius: 6,
+                        tension: 0.38
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: value => '₹' + Number(value).toLocaleString('en-IN')
+                            }
+                        }
+                    }
+                }
+            });
+
+            gbpChart = new Chart(gbpCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['GBP Value', 'UK CGT', 'Net GBP'],
+                    datasets: [{
+                        label: 'GBP',
+                        data: gbpValues,
+                        borderRadius: 10,
+                        backgroundColor: [
+                            'rgba(22, 163, 74, 0.8)',
+                            'rgba(217, 119, 6, 0.8)',
+                            'rgba(37, 99, 235, 0.8)'
+                        ],
+                        borderColor: [
+                            '#16a34a',
+                            '#d97706',
+                            '#2563eb'
+                        ],
+                        borderWidth: 1.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: value => '£' + Number(value).toLocaleString('en-GB', { maximumFractionDigits: 2 })
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderAll() {
+
+            Promise.all([
+
+                new Promise(resolve => {
+
+                    let tx =
+                        db.transaction(["income"], "readonly");
+
+                    tx.objectStore("income")
+                        .getAll()
+                        .onsuccess = e => resolve(e.target.result);
+                }),
+
+                new Promise(resolve => {
+
+                    let tx =
+                        db.transaction(["expense"], "readonly");
+
+                    tx.objectStore("expense")
+                        .getAll()
+                        .onsuccess = e => resolve(e.target.result);
+                }),
+
+                new Promise(resolve => {
+
+                    let tx =
+                        db.transaction(["config"], "readonly");
+
+                    tx.objectStore("config")
+                        .get(1)
+                        .onsuccess = e => resolve(e.target.result || {});
+                })
+
+            ]).then(([income, expense, config]) => {
+
+                let totalIncome = 0;
+                let totalExpense = 0;
+
+                let incomeHtml = "";
+                let expenseHtml = "";
+
+                income.forEach(x => {
+
+                    totalIncome += x.amount;
+
+                    incomeHtml += `
+                                <div class="item">
+                                    <span>${x.type}</span>
+                                    <span>
+                                        ${formatINR(x.amount)}
+                                        <button class="smallbtn danger"
+                                        onclick="deleteIncome(${x.id})">
+                                        X
+                                        </button>
+                                    </span>
+                                </div>
+                            `;
+                });
+
+                expense.forEach(x => {
+
+                    totalExpense += x.amount;
+
+                    expenseHtml += `
+                        <div class="item">
+                            <span>${x.description}</span>
+                            <span>
+                                ${formatINR(x.amount)}
+                                <button class="smallbtn danger"
+                                onclick="deleteExpense(${x.id})">
+                                X
+                                </button>
+                            </span>
+                        </div>
+                    `;
+                });
+
+                incomeList.innerHTML = incomeHtml;
+                expenseList.innerHTML = expenseHtml;
+
+                const tds = Number(config.tdsPercent || 0);
+                const india = Number(config.indiaTax || 0);
+                const uk = Number(config.ukTax || 0);
+                const rate = Number(config.gbpRate || 110);
+
+                /* Taxable amount after expenses */
+                const taxableAmount = Math.max(0, totalIncome - totalExpense);
+
+                /* TDS already paid */
+                const tdsPaid = totalIncome * tds / 100;
+
+                /* Indian CGT liability */
+                const indiaCGT = taxableAmount * india / 100;
+
+                /* Compare TDS with CGT */
+                const adjustment = tdsPaid - indiaCGT;
+
+                /*
+                adjustment > 0  => refund/credit
+                adjustment < 0  => more Indian tax due
+                */
+
+                /* Position after India tax settlement */
+                const afterIndiaTax = ((totalIncome - tdsPaid) + adjustment) - totalExpense;
+
+                /* Final INR */
+                const finalINR = afterIndiaTax ;//- ukCGT;
+
+                /* Final GBP */
+                const finalGBP = (afterIndiaTax / rate);
+
+                  /* UK CGT */
+                const ukCGT = Math.max(0, finalGBP) * uk / 100;
+
+                /* Dashboard updates */
+
+                cardIncome.innerText = formatINR(totalIncome);
+
+                cardExpense.innerText = formatINR(totalExpense);
+
+                cardTaxable.innerText = formatINR(taxableAmount);
+
+                cardTDS.innerText = formatINR(tdsPaid);
+
+                cardIndiaCGT.innerText = formatINR(indiaCGT);
+
+                cardAdjustment.innerText =
+                    adjustment >= 0
+                        ? "Refund " + formatINR(adjustment)
+                        : "Pay " + formatINR(Math.abs(adjustment));
+
+                cardAfterIndia.innerText =
+                    formatINR(afterIndiaTax);
+
+                cardUkCGT.innerText =
+                    formatINR(ukCGT);
+
+                cardUKBeforeCGT.innerText =
+                    formatINR(finalGBP);
+
+                const finalNetGBP = finalGBP - ukCGT;
+
+                cardFinalGBP.innerText =
+                    formatGBP(finalNetGBP);
+
+                renderCharts(
+                    [totalIncome, totalExpense, tdsPaid, indiaCGT, afterIndiaTax, finalINR],
+                    [finalGBP, ukCGT, finalNetGBP]
+                );
+
+            });
+        }
+
+    </script>
+
+</body>
+
+</html>
