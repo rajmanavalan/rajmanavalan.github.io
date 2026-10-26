@@ -4,16 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quick Budget & Expense Tracker</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 :root{
     --primary:#2563eb;
-    --success:#16a34a;
-    --danger:#dc2626;
+    --success:#22c55e;
     --warning:#f59e0b;
-    --purple:#8b5cf6;
+    --danger:#ef4444;
     --bg:#f3f4f6;
-    --card:#ffffff;
 }
 
 *{
@@ -23,85 +21,20 @@
 body{
     margin:0;
     padding:20px;
-    font-family:Segoe UI,Arial,sans-serif;
+    font-family:Segoe UI,sans-serif;
     background:var(--bg);
 }
 
-h1{
-    margin-top:0;
-    color:#111827;
-}
-
-h2{
-    margin-bottom:10px;
+h1,h2{
+    color:#1f2937;
 }
 
 .section{
-    background:white;
-    padding:20px;
+    background:#fff;
     border-radius:16px;
+    padding:20px;
     margin-bottom:20px;
-    box-shadow:0 2px 10px rgba(0,0,0,.08);
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-    gap:15px;
-}
-
-.card{
-    background:var(--card);
-    border-radius:16px;
-    padding:20px;
-    box-shadow:0 4px 12px rgba(0,0,0,.08);
-}
-
-.card h3{
-    margin-top:0;
-    margin-bottom:10px;
-    color:#4b5563;
-    font-size:15px;
-}
-
-.value{
-    font-size:28px;
-    font-weight:bold;
-    color:#111827;
-}
-
-input{
-    width:100%;
-    padding:10px;
-    border:1px solid #d1d5db;
-    border-radius:8px;
-}
-
-button{
-    border:none;
-    padding:10px 14px;
-    border-radius:8px;
-    cursor:pointer;
-}
-
-.btnPrimary{
-    background:var(--primary);
-    color:white;
-}
-
-.btnSuccess{
-    background:var(--success);
-    color:white;
-}
-
-.btnDanger{
-    background:var(--danger);
-    color:white;
-}
-
-.btnPurple{
-    background:var(--purple);
-    color:white;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
 
 .row{
@@ -110,15 +43,56 @@ button{
     flex-wrap:wrap;
 }
 
-.row > *{
+.row>*{
     flex:1;
+}
+
+input{
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    width:100%;
+}
+
+button{
+    border:none;
+    border-radius:8px;
+    padding:10px 14px;
+    cursor:pointer;
+    color:white;
+}
+
+.btnPrimary{background:var(--primary);}
+.btnSuccess{background:var(--success);}
+.btnDanger{background:var(--danger);}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+    gap:15px;
+}
+
+.card{
+    background:white;
+    border-radius:16px;
+    padding:20px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+
+.card h3{
+    margin-top:0;
+    color:#4b5563;
+}
+
+.value{
+    font-size:28px;
+    font-weight:bold;
 }
 
 .item{
     display:flex;
     justify-content:space-between;
-    align-items:center;
-    padding:10px 0;
+    padding:8px 0;
     border-bottom:1px solid #eee;
 }
 
@@ -126,25 +100,40 @@ button{
     border-bottom:none;
 }
 
-.smallBtn{
-    padding:5px 8px;
-    margin-left:8px;
+.progress{
+    width:100%;
+    height:24px;
+    background:#e5e7eb;
+    border-radius:50px;
+    overflow:hidden;
 }
 
-.green{
-    border-left:6px solid var(--success);
+.progress-fill{
+    height:100%;
+    width:0%;
+    transition:.5s;
+    text-align:center;
+    color:white;
+    font-weight:bold;
+    line-height:24px;
 }
 
-.amber{
-    border-left:6px solid var(--warning);
+.bar{
+    margin:12px 0;
 }
 
-.red{
-    border-left:6px solid var(--danger);
+.bar-label{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:4px;
+}
+
+.bar-fill{
+    height:22px;
+    border-radius:8px;
 }
 
 @media(max-width:700px){
-
     .row{
         flex-direction:column;
     }
@@ -153,68 +142,70 @@ button{
 </head>
 <body>
 
-<h1>💰 Quick Budget & Expense Tracker</h1>
+<h1>💰 Quick Budget Dashboard</h1>
 
 <div class="section">
 
-    <h2>Income</h2>
+<h2>Income</h2>
 
-    <div class="row">
-        <input id="incomeAmount"
-               type="number"
-               placeholder="Enter Income Amount">
+<div class="row">
+    <input type="number"
+           id="incomeAmount"
+           placeholder="Income Amount">
 
-        <button class="btnPrimary"
-                onclick="saveIncome()">
-            Save Income
-        </button>
-    </div>
+    <button class="btnPrimary"
+            onclick="saveIncome()">
+        Save Income
+    </button>
+</div>
 
 </div>
 
 <div class="section">
 
-    <h2>Budget Entries</h2>
+<h2>Budget</h2>
 
-    <div class="row">
-        <input id="budgetDesc"
-               placeholder="Budget Category">
+<div class="row">
 
-        <input id="budgetAmount"
-               type="number"
-               placeholder="Budget Amount">
+    <input id="budgetDesc"
+           placeholder="Category">
 
-        <button class="btnPurple"
-                onclick="addBudget()">
+    <input id="budgetValue"
+           type="number"
+           placeholder="Amount">
+
+    <button class="btnSuccess"
+            onclick="addBudget()">
             Add Budget
-        </button>
-    </div>
+    </button>
 
-    <div id="budgetList"></div>
+</div>
+
+<div id="budgetList"></div>
 
 </div>
 
 <div class="section">
 
-    <h2>Expense Entries</h2>
+<h2>Expenses</h2>
 
-    <div class="row">
+<div class="row">
 
-        <input id="expenseDesc"
-               placeholder="Expense Description">
+    <input id="expenseDesc"
+           placeholder="Description">
 
-        <input id="expenseAmount"
-               type="number"
-               placeholder="Expense Amount">
+    <input id="expenseValue"
+           type="number"
+           placeholder="Amount">
 
-        <button class="btnDanger"
-                onclick="addExpense()">
+    <button class="btnDanger"
+            onclick="addExpense()">
             Add Expense
-        </button>
+    </button>
 
-    </div>
+</div>
 
-    <div id="expenseList"></div>
+<div id="expenseList"></div>
 
 </div>
 
@@ -222,520 +213,438 @@ button{
 
 <div class="grid">
 
-    <div class="card green">
-        <h3>💰 Income</h3>
-        <div id="cardIncome" class="value">£0</div>
-    </div>
+<div class="card">
+<h3>💰 Income</h3>
+<div id="incomeCard" class="value">£0</div>
+</div>
 
-    <div class="card">
-        <h3>🎯 Budget</h3>
-        <div id="cardBudget" class="value">£0</div>
-    </div>
+<div class="card">
+<h3>🎯 Budget</h3>
+<div id="budgetCard" class="value">£0</div>
+</div>
 
-    <div class="card">
-        <h3>💸 Expenses</h3>
-        <div id="cardExpense" class="value">£0</div>
-    </div>
+<div class="card">
+<h3>💸 Expenses</h3>
+<div id="expenseCard" class="value">£0</div>
+</div>
 
-    <div class="card">
-        <h3>⚖ Budget Remaining</h3>
-        <div id="cardBudgetRemaining" class="value">£0</div>
-    </div>
+<div class="card">
+<h3>⚖ Budget Remaining</h3>
+<div id="budgetRemainCard"
+     class="value">£0</div>
+</div>
 
-    <div class="card">
-        <h3>✅ Remaining Balance</h3>
-        <div id="cardBalance" class="value">£0</div>
-    </div>
+<div class="card">
+<h3>✅ Remaining Balance</h3>
+<div id="balanceCard"
+     class="value">£0</div>
+</div>
 
-    <div class="card">
-        <h3>📊 Budget Usage</h3>
-        <div id="cardUsage" class="value">0%</div>
+<div class="card">
+<h3>📊 Budget Usage</h3>
+
+<div class="progress">
+    <div id="usageProgress"
+         class="progress-fill">
+         0%
     </div>
+</div>
 
 </div>
-<br/>
+
+</div>
+
 <div class="section">
 
-    <h2>📊 Financial Insights</h2>
+<h2>Visual Analysis</h2>
 
-    <div class="grid">
+<h3>Budget vs Expense</h3>
 
-        <div class="card">
-            <h3>Income Allocation</h3>
-            <canvas id="allocationChart"></canvas>
-        </div>
+<div class="bar">
 
-        <div class="card">
-            <h3>Budget Usage</h3>
-            <canvas id="usageChart"></canvas>
-        </div>
+<div class="bar-label">
+    <span>Budget</span>
+    <span id="budgetBarValue">£0</span>
+</div>
 
-        <div class="card">
-            <h3>Budget vs Actual</h3>
-            <canvas id="budgetActualChart"></canvas>
-        </div>
-
-        <div class="card">
-            <h3>Expense Breakdown</h3>
-            <canvas id="expenseCategoryChart"></canvas>
-        </div>
-
-    </div>
+<div style="background:#e5e7eb;border-radius:8px;">
+<div id="budgetBar"
+     class="bar-fill"
+     style="width:0%;background:#2563eb;">
+</div>
+</div>
 
 </div>
+
+<div class="bar">
+
+<div class="bar-label">
+    <span>Expenses</span>
+    <span id="expenseBarValue">£0</span>
+</div>
+
+<div style="background:#e5e7eb;border-radius:8px;">
+<div id="expenseBar"
+     class="bar-fill"
+     style="width:0%;background:#ef4444;">
+</div>
+</div>
+
+</div>
+
+<h3>Expense Breakdown</h3>
+
+<div id="expenseBreakdown"></div>
+
+</div>
+
 <script>
 
 let db;
 
-const request = indexedDB.open("BudgetPlannerDB",1);
+const req =
+indexedDB.open(
+    "BudgetDashboardDB",1);
 
-request.onupgradeneeded = function(e){
+req.onupgradeneeded=e=>{
 
-    db = e.target.result;
+    db=e.target.result;
 
-    if(!db.objectStoreNames.contains("settings")){
-        db.createObjectStore("settings",{keyPath:"id"});
-    }
+    db.createObjectStore(
+        "settings",
+        {keyPath:"id"});
 
-    if(!db.objectStoreNames.contains("budgets")){
-        db.createObjectStore("budgets",
+    db.createObjectStore(
+        "budgets",
         {keyPath:"id",autoIncrement:true});
-    }
 
-    if(!db.objectStoreNames.contains("expenses")){
-        db.createObjectStore("expenses",
+    db.createObjectStore(
+        "expenses",
         {keyPath:"id",autoIncrement:true});
-    }
 };
 
-request.onsuccess = function(e){
+req.onsuccess=e=>{
 
-    db = e.target.result;
+    db=e.target.result;
 
-    loadIncome();
-    renderDashboard();
+    render();
 };
 
-function currency(v){
+function money(v){
 
-    return "£" + Number(v).toLocaleString(
+    return "£" +
+    Number(v).toLocaleString(
         "en-GB",
         {
-            minimumFractionDigits:2,
-            maximumFractionDigits:2
+            minimumFractionDigits:2
         });
 }
 
 function saveIncome(){
 
-    let income =
-        Number(document.getElementById(
-            "incomeAmount").value || 0);
+    let income=
+    Number(
+    incomeAmount.value||0);
 
-    let tx =
-        db.transaction(["settings"],"readwrite");
+    let tx=
+    db.transaction(
+        ["settings"],
+        "readwrite");
 
-    tx.objectStore("settings").put({
+    tx.objectStore(
+        "settings")
+      .put({
         id:1,
         income:income
-    });
+      });
 
-    tx.oncomplete = function(){
-        renderDashboard();
-    };
-}
-
-function loadIncome(){
-
-    let tx =
-        db.transaction(["settings"],"readonly");
-
-    tx.objectStore("settings")
-      .get(1)
-      .onsuccess = function(e){
-
-        let data = e.target.result;
-
-        if(data){
-            incomeAmount.value =
-                data.income;
-        }
-    };
+    tx.oncomplete=render;
 }
 
 function addBudget(){
 
-    let desc =
-        budgetDesc.value.trim();
+    if(!budgetDesc.value ||
+       !budgetValue.value)
+       return;
 
-    let amount =
-        Number(budgetAmount.value);
-
-    if(!desc || !amount){
-        return;
-    }
-
-    let tx =
-        db.transaction(["budgets"],
+    let tx=
+    db.transaction(
+        ["budgets"],
         "readwrite");
 
-    tx.objectStore("budgets").add({
-        description:desc,
-        amount:amount
-    });
+    tx.objectStore(
+        "budgets")
+      .add({
+        description:budgetDesc.value,
+        amount:Number(
+               budgetValue.value)
+      });
 
-    tx.oncomplete = function(){
+    tx.oncomplete=()=>{
 
         budgetDesc.value="";
-        budgetAmount.value="";
+        budgetValue.value="";
 
-        renderDashboard();
+        render();
     };
 }
 
 function addExpense(){
 
-    let desc =
-        expenseDesc.value.trim();
+    if(!expenseDesc.value ||
+       !expenseValue.value)
+       return;
 
-    let amount =
-        Number(expenseAmount.value);
-
-    if(!desc || !amount){
-        return;
-    }
-
-    let tx =
-        db.transaction(["expenses"],
+    let tx=
+    db.transaction(
+        ["expenses"],
         "readwrite");
 
-    tx.objectStore("expenses").add({
-        description:desc,
-        amount:amount
-    });
+    tx.objectStore(
+        "expenses")
+      .add({
 
-    tx.oncomplete = function(){
+        description:
+            expenseDesc.value,
+
+        amount:Number(
+            expenseValue.value)
+      });
+
+    tx.oncomplete=()=>{
 
         expenseDesc.value="";
-        expenseAmount.value="";
+        expenseValue.value="";
 
-        renderDashboard();
+        render();
     };
 }
 
 function deleteBudget(id){
 
-    let tx =
-        db.transaction(["budgets"],
+    let tx=
+    db.transaction(
+        ["budgets"],
         "readwrite");
 
-    tx.objectStore("budgets")
+    tx.objectStore(
+        "budgets")
       .delete(id);
 
-    tx.oncomplete = renderDashboard;
+    tx.oncomplete=render;
 }
 
 function deleteExpense(id){
 
-    let tx =
-        db.transaction(["expenses"],
+    let tx=
+    db.transaction(
+        ["expenses"],
         "readwrite");
 
-    tx.objectStore("expenses")
+    tx.objectStore(
+        "expenses")
       .delete(id);
 
-    tx.oncomplete = renderDashboard;
-}
-let allocationChart = null;
-let usageChart = null;
-let budgetActualChart = null;
-let expenseCategoryChart = null;
-
-function renderCharts(
-    income,
-    totalBudget,
-    totalExpense,
-    remainingBalance,
-    budgetUsage,
-    budgets,
-    expenses
-){
-
-    if(allocationChart) allocationChart.destroy();
-    if(usageChart) usageChart.destroy();
-    if(budgetActualChart) budgetActualChart.destroy();
-    if(expenseCategoryChart) expenseCategoryChart.destroy();
-
-    allocationChart = new Chart(
-        document.getElementById("allocationChart"),
-        {
-            type:"doughnut",
-            data:{
-                labels:[
-                    "Expenses",
-                    "Budget",
-                    "Remaining"
-                ],
-                datasets:[{
-                    data:[
-                        totalExpense,
-                        totalBudget,
-                        Math.max(0, remainingBalance)
-                    ],
-                    backgroundColor:[
-                        "#ef4444",
-                        "#3b82f6",
-                        "#22c55e"
-                    ]
-                }]
-            },
-            options:{
-                responsive:true
-            }
-        }
-    );
-
-    usageChart = new Chart(
-        document.getElementById("usageChart"),
-        {
-            type:"doughnut",
-            data:{
-                labels:["Used","Remaining"],
-                datasets:[{
-                    data:[
-                        Math.min(budgetUsage,100),
-                        Math.max(0,100-budgetUsage)
-                    ],
-                    backgroundColor:[
-                        budgetUsage<70
-                        ? "#22c55e"
-                        : budgetUsage<90
-                          ? "#f59e0b"
-                          : "#ef4444",
-                        "#e5e7eb"
-                    ]
-                }]
-            },
-            options:{
-                cutout:"75%",
-                plugins:{
-                    legend:{
-                        display:false
-                    }
-                }
-            }
-        }
-    );
-
-    budgetActualChart = new Chart(
-        document.getElementById("budgetActualChart"),
-        {
-            type:"bar",
-            data:{
-                labels:["Budget","Expenses"],
-                datasets:[{
-                    label:"Amount (£)",
-                    data:[
-                        totalBudget,
-                        totalExpense
-                    ],
-                    backgroundColor:[
-                        "#3b82f6",
-                        "#ef4444"
-                    ]
-                }]
-            },
-            options:{
-                responsive:true
-            }
-        }
-    );
-
-    let expenseLabels =
-        expenses.length
-        ? expenses.map(x=>x.description)
-        : ["No Expenses"];
-
-    let expenseValues =
-        expenses.length
-        ? expenses.map(x=>x.amount)
-        : [1];
-
-    expenseCategoryChart = new Chart(
-        document.getElementById(
-            "expenseCategoryChart"
-        ),
-        {
-            type:"pie",
-            data:{
-                labels:expenseLabels,
-                datasets:[{
-                    data:expenseValues,
-                    backgroundColor:[
-                        "#3b82f6",
-                        "#22c55e",
-                        "#f59e0b",
-                        "#ef4444",
-                        "#8b5cf6",
-                        "#06b6d4",
-                        "#ec4899"
-                    ]
-                }]
-            },
-            options:{
-                responsive:true
-            }
-        }
-    );
+    tx.oncomplete=render;
 }
 
-    
-function renderDashboard(){
+function render(){
 
 Promise.all([
 
-new Promise(resolve=>{
+new Promise(r=>{
 
-let tx =
-db.transaction(["settings"],"readonly");
-
-tx.objectStore("settings")
-  .get(1)
-  .onsuccess=e=>resolve(
-      e.target.result || {income:0});
+db.transaction(
+["settings"])
+.objectStore(
+"settings")
+.get(1)
+.onsuccess=e=>
+r(
+e.target.result ||
+{income:0});
 }),
 
-new Promise(resolve=>{
+new Promise(r=>{
 
-let tx =
-db.transaction(["budgets"],"readonly");
-
-tx.objectStore("budgets")
-  .getAll()
-  .onsuccess=e=>resolve(
-       e.target.result);
+db.transaction(
+["budgets"])
+.objectStore(
+"budgets")
+.getAll()
+.onsuccess=e=>
+r(
+e.target.result);
 }),
 
-new Promise(resolve=>{
+new Promise(r=>{
 
-let tx =
-db.transaction(["expenses"],"readonly");
-
-tx.objectStore("expenses")
-  .getAll()
-  .onsuccess=e=>resolve(
-      e.target.result);
+db.transaction(
+["expenses"])
+.objectStore(
+"expenses")
+.getAll()
+.onsuccess=e=>
+r(
+e.target.result);
 })
 
 ]).then(([settings,budgets,expenses])=>{
 
-    let income =
-        Number(settings.income || 0);
+let income=
+Number(settings.income||0);
 
-    let totalBudget = 0;
-    let totalExpense = 0;
+incomeAmount.value=
+income;
 
-    let budgetHtml = "";
-    let expenseHtml = "";
+let budget=0;
+let expense=0;
 
-    budgets.forEach(b=>{
+let budgetHtml="";
+let expenseHtml="";
 
-        totalBudget += b.amount;
+budgets.forEach(x=>{
 
-        budgetHtml += `
-        <div class="item">
-            <span>${b.description}</span>
+budget += x.amount;
 
-            <span>
-                ${currency(b.amount)}
-
-                <button
-                class="smallBtn btnDanger"
-                onclick="deleteBudget(${b.id})">
-                X
-                </button>
-            </span>
-        </div>`;
-    });
-
-    expenses.forEach(e=>{
-
-        totalExpense += e.amount;
-
-        expenseHtml += `
-        <div class="item">
-            <span>${e.description}</span>
-
-            <span>
-                ${currency(e.amount)}
-
-                <button
-                class="smallBtn btnDanger"
-                onclick="deleteExpense(${e.id})">
-                X
-                </button>
-            </span>
-        </div>`;
-    });
-
-    budgetList.innerHTML =
-        budgetHtml;
-
-    expenseList.innerHTML =
-        expenseHtml;
-
-    let budgetRemaining =
-        totalBudget - totalExpense;
-
-    let remainingBalance =
-        income - totalExpense;
-
-    let budgetUsage = 0;
-
-    if(totalBudget > 0){
-
-        budgetUsage =
-            (totalExpense /
-            totalBudget) * 100;
-    }
-
-    cardIncome.innerText =
-        currency(income);
-
-    cardBudget.innerText =
-        currency(totalBudget);
-
-    cardExpense.innerText =
-        currency(totalExpense);
-
-    cardBudgetRemaining.innerText =
-        currency(budgetRemaining);
-
-    cardBalance.innerText =
-        currency(remainingBalance);
-
-    cardUsage.innerText =
-        budgetUsage.toFixed(1) + "%";
-
-    let usageCard =
-        document.getElementById(
-        "cardUsage").parentElement;
-
-    usageCard.classList.remove(
-        "green","amber","red");
-
-    if(budgetUsage < 70){
-        usageCard.classList.add("green");
-    }
-    else if(budgetUsage < 90){
-        usageCard.classList.add("amber");
-    }
-    else{
-        usageCard.classList.add("red");
-    }
-
+budgetHtml += `
+<div class="item">
+<span>${x.description}</span>
+<span>
+${money(x.amount)}
+<button onclick="deleteBudget(${x.id})">
+❌
+</button>
+</span>
+</div>`;
 });
 
+expenses.forEach(x=>{
+
+expense += x.amount;
+
+expenseHtml += `
+<div class="item">
+<span>${x.description}</span>
+<span>
+${money(x.amount)}
+<button onclick="deleteExpense(${x.id})">
+❌
+</button>
+</span>
+</div>`;
+});
+
+budgetList.innerHTML=
+budgetHtml;
+
+expenseList.innerHTML=
+expenseHtml;
+
+const budgetRemaining=
+budget-expense;
+
+const balance=
+income-expense;
+
+const budgetUsage=
+budget>0
+?
+(expense/budget)*100
+:
+0;
+
+incomeCard.innerText=
+money(income);
+
+budgetCard.innerText=
+money(budget);
+
+expenseCard.innerText=
+money(expense);
+
+budgetRemainCard.innerText=
+money(budgetRemaining);
+
+balanceCard.innerText=
+money(balance);
+
+const fill=
+document.getElementById(
+"usageProgress");
+
+fill.style.width=
+Math.min(
+budgetUsage,
+100
+)+"%";
+
+fill.innerText=
+budgetUsage.toFixed(1)
++"%";
+
+fill.style.background=
+budgetUsage<70
+?"#22c55e"
+:budgetUsage<90
+?"#f59e0b"
+:"#ef4444";
+
+const max=
+Math.max(
+budget,
+expense,
+1);
+
+budgetBar.style.width=
+((budget/max)*100)+
+"%";
+
+expenseBar.style.width=
+((expense/max)*100)+
+"%";
+
+budgetBarValue.innerText=
+money(budget);
+
+expenseBarValue.innerText=
+money(expense);
+
+let breakdown="";
+
+expenses.forEach(x=>{
+
+const pct=
+expense>0
+?
+((x.amount/expense)*100)
+.toFixed(1)
+:0;
+
+breakdown += `
+<div style="margin-bottom:12px;">
+<div class="bar-label">
+<span>${x.description}</span>
+<span>${pct}%</span>
+</div>
+
+<div style="
+background:#e5e7eb;
+border-radius:8px;">
+<div style="
+width:${pct}%;
+height:20px;
+background:#ef4444;
+border-radius:8px;">
+</div>
+</div>
+</div>`;
+});
+
+expenseBreakdown.innerHTML=
+breakdown;
+
+});
 }
 
 </script>
