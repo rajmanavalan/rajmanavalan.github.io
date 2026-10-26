@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quick Budget & Expense Tracker</title>
+
+<style>
+:root{
+    --primary:#2563eb;
+    --success:#16a34a;
+    --danger:#dc2626;
+    --warning:#f59e0b;
+    --purple:#8b5cf6;
+    --bg:#f3f4f6;
+    --card:#ffffff;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    padding:20px;
+    font-family:Segoe UI,Arial,sans-serif;
+    background:var(--bg);
+}
+
+h1{
+    margin-top:0;
+    color:#111827;
+}
+
+h2{
+    margin-bottom:10px;
+}
+
+.section{
+    background:white;
+    padding:20px;
+    border-radius:16px;
+    margin-bottom:20px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:15px;
+}
+
+.card{
+    background:var(--card);
+    border-radius:16px;
+    padding:20px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+
+.card h3{
+    margin-top:0;
+    margin-bottom:10px;
+    color:#4b5563;
+    font-size:15px;
+}
+
+.value{
+    font-size:28px;
+    font-weight:bold;
+    color:#111827;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    border:1px solid #d1d5db;
+    border-radius:8px;
+}
+
+button{
+    border:none;
+    padding:10px 14px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.btnPrimary{
+    background:var(--primary);
+    color:white;
+}
+
+.btnSuccess{
+    background:var(--success);
+    color:white;
+}
+
+.btnDanger{
+    background:var(--danger);
+    color:white;
+}
+
+.btnPurple{
+    background:var(--purple);
+    color:white;
+}
+
+.row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.row > *{
+    flex:1;
+}
+
+.item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 0;
+    border-bottom:1px solid #eee;
+}
+
+.item:last-child{
+    border-bottom:none;
+}
+
+.smallBtn{
+    padding:5px 8px;
+    margin-left:8px;
+}
+
+.green{
+    border-left:6px solid var(--success);
+}
+
+.amber{
+    border-left:6px solid var(--warning);
+}
+
+.red{
+    border-left:6px solid var(--danger);
+}
+
+@media(max-width:700px){
+
+    .row{
+        flex-direction:column;
+    }
+}
+</style>
+</head>
+<body>
+
+<h1>💰 Quick Budget & Expense Tracker</h1>
+
+<div class="section">
+
+    <h2>Income</h2>
+
+    <div class="row">
+        <input id="incomeAmount"
+               type="number"
+               placeholder="Enter Income Amount">
+
+        <button class="btnPrimary"
+                onclick="saveIncome()">
+            Save Income
+        </button>
+    </div>
+
+</div>
+
+<div class="section">
+
+    <h2>Budget Entries</h2>
+
+    <div class="row">
+        <input id="budgetDesc"
+               placeholder="Budget Category">
+
+        <input id="budgetAmount"
+               type="number"
+               placeholder="Budget Amount">
+
+        <button class="btnPurple"
+                onclick="addBudget()">
+            Add Budget
+        </button>
+    </div>
+
+    <div id="budgetList"></div>
+
+</div>
+
+<div class="section">
+
+    <h2>Expense Entries</h2>
+
+    <div class="row">
+
+        <input id="expenseDesc"
+               placeholder="Expense Description">
+
+        <input id="expenseAmount"
+               type="number"
+               placeholder="Expense Amount">
+
+        <button class="btnDanger"
+                onclick="addExpense()">
+            Add Expense
+        </button>
+
+    </div>
+
+    <div id="expenseList"></div>
+
+</div>
+
+<h2>Dashboard</h2>
+
+<div class="grid">
+
+    <div class="card green">
+        <h3>💰 Income</h3>
+        <div id="cardIncome" class="value">£0</div>
+    </div>
+
+    <div class="card">
+        <h3>🎯 Budget</h3>
+        <div id="cardBudget" class="value">£0</div>
+    </div>
+
+    <div class="card">
+        <h3>💸 Expenses</h3>
+        <div id="cardExpense" class="value">£0</div>
+    </div>
+
+    <div class="card">
+        <h3>⚖ Budget Remaining</h3>
+        <div id="cardBudgetRemaining" class="value">£0</div>
+    </div>
+
+    <div class="card">
+        <h3>✅ Remaining Balance</h3>
+        <div id="cardBalance" class="value">£0</div>
+    </div>
+
+    <div class="card">
+        <h3>📊 Budget Usage</h3>
+        <div id="cardUsage" class="value">0%</div>
+    </div>
+
+</div>
+
+<script>
+
+let db;
+
+const request = indexedDB.open("BudgetPlannerDB",1);
+
+request.onupgradeneeded = function(e){
+
+    db = e.target.result;
+
+    if(!db.objectStoreNames.contains("settings")){
+        db.createObjectStore("settings",{keyPath:"id"});
+    }
+
+    if(!db.objectStoreNames.contains("budgets")){
+        db.createObjectStore("budgets",
+        {keyPath:"id",autoIncrement:true});
+    }
+
+    if(!db.objectStoreNames.contains("expenses")){
+        db.createObjectStore("expenses",
+        {keyPath:"id",autoIncrement:true});
+    }
+};
+
+request.onsuccess = function(e){
+
+    db = e.target.result;
+
+    loadIncome();
+    renderDashboard();
+};
+
+function currency(v){
+
+    return "£" + Number(v).toLocaleString(
+        "en-GB",
+        {
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        });
+}
+
+function saveIncome(){
+
+    let income =
+        Number(document.getElementById(
+            "incomeAmount").value || 0);
+
+    let tx =
+        db.transaction(["settings"],"readwrite");
+
+    tx.objectStore("settings").put({
+        id:1,
+        income:income
+    });
+
+    tx.oncomplete = function(){
+        renderDashboard();
+    };
+}
+
+function loadIncome(){
+
+    let tx =
+        db.transaction(["settings"],"readonly");
+
+    tx.objectStore("settings")
+      .get(1)
+      .onsuccess = function(e){
+
+        let data = e.target.result;
+
+        if(data){
+            incomeAmount.value =
+                data.income;
+        }
+    };
+}
+
+function addBudget(){
+
+    let desc =
+        budgetDesc.value.trim();
+
+    let amount =
+        Number(budgetAmount.value);
+
+    if(!desc || !amount){
+        return;
+    }
+
+    let tx =
+        db.transaction(["budgets"],
+        "readwrite");
+
+    tx.objectStore("budgets").add({
+        description:desc,
+        amount:amount
+    });
+
+    tx.oncomplete = function(){
+
+        budgetDesc.value="";
+        budgetAmount.value="";
+
+        renderDashboard();
+    };
+}
+
+function addExpense(){
+
+    let desc =
+        expenseDesc.value.trim();
+
+    let amount =
+        Number(expenseAmount.value);
+
+    if(!desc || !amount){
+        return;
+    }
+
+    let tx =
+        db.transaction(["expenses"],
+        "readwrite");
+
+    tx.objectStore("expenses").add({
+        description:desc,
+        amount:amount
+    });
+
+    tx.oncomplete = function(){
+
+        expenseDesc.value="";
+        expenseAmount.value="";
+
+        renderDashboard();
+    };
+}
+
+function deleteBudget(id){
+
+    let tx =
+        db.transaction(["budgets"],
+        "readwrite");
+
+    tx.objectStore("budgets")
+      .delete(id);
+
+    tx.oncomplete = renderDashboard;
+}
+
+function deleteExpense(id){
+
+    let tx =
+        db.transaction(["expenses"],
+        "readwrite");
+
+    tx.objectStore("expenses")
+      .delete(id);
+
+    tx.oncomplete = renderDashboard;
+}
+
+function renderDashboard(){
+
+Promise.all([
+
+new Promise(resolve=>{
+
+let tx =
+db.transaction(["settings"],"readonly");
+
+tx.objectStore("settings")
+  .get(1)
+  .onsuccess=e=>resolve(
+      e.target.result || {income:0});
+}),
+
+new Promise(resolve=>{
+
+let tx =
+db.transaction(["budgets"],"readonly");
+
+tx.objectStore("budgets")
+  .getAll()
+  .onsuccess=e=>resolve(
+       e.target.result);
+}),
+
+new Promise(resolve=>{
+
+let tx =
+db.transaction(["expenses"],"readonly");
+
+tx.objectStore("expenses")
+  .getAll()
+  .onsuccess=e=>resolve(
+      e.target.result);
+})
+
+]).then(([settings,budgets,expenses])=>{
+
+    let income =
+        Number(settings.income || 0);
+
+    let totalBudget = 0;
+    let totalExpense = 0;
+
+    let budgetHtml = "";
+    let expenseHtml = "";
+
+    budgets.forEach(b=>{
+
+        totalBudget += b.amount;
+
+        budgetHtml += `
+        <div class="item">
+            <span>${b.description}</span>
+
+            <span>
+                ${currency(b.amount)}
+
+                <button
+                class="smallBtn btnDanger"
+                onclick="deleteBudget(${b.id})">
+                X
+                </button>
+            </span>
+        </div>`;
+    });
+
+    expenses.forEach(e=>{
+
+        totalExpense += e.amount;
+
+        expenseHtml += `
+        <div class="item">
+            <span>${e.description}</span>
+
+            <span>
+                ${currency(e.amount)}
+
+                <button
+                class="smallBtn btnDanger"
+                onclick="deleteExpense(${e.id})">
+                X
+                </button>
+            </span>
+        </div>`;
+    });
+
+    budgetList.innerHTML =
+        budgetHtml;
+
+    expenseList.innerHTML =
+        expenseHtml;
+
+    let budgetRemaining =
+        totalBudget - totalExpense;
+
+    let remainingBalance =
+        income - totalExpense;
+
+    let budgetUsage = 0;
+
+    if(totalBudget > 0){
+
+        budgetUsage =
+            (totalExpense /
+            totalBudget) * 100;
+    }
+
+    cardIncome.innerText =
+        currency(income);
+
+    cardBudget.innerText =
+        currency(totalBudget);
+
+    cardExpense.innerText =
+        currency(totalExpense);
+
+    cardBudgetRemaining.innerText =
+        currency(budgetRemaining);
+
+    cardBalance.innerText =
+        currency(remainingBalance);
+
+    cardUsage.innerText =
+        budgetUsage.toFixed(1) + "%";
+
+    let usageCard =
+        document.getElementById(
+        "cardUsage").parentElement;
+
+    usageCard.classList.remove(
+        "green","amber","red");
+
+    if(budgetUsage < 70){
+        usageCard.classList.add("green");
+    }
+    else if(budgetUsage < 90){
+        usageCard.classList.add("amber");
+    }
+    else{
+        usageCard.classList.add("red");
+    }
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
