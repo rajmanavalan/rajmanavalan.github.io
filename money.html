@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quick Budget & Expense Tracker</title>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root{
     --primary:#2563eb;
@@ -253,7 +253,35 @@ button{
     </div>
 
 </div>
+<div class="section">
 
+    <h2>📊 Financial Insights</h2>
+
+    <div class="grid">
+
+        <div class="card">
+            <h3>Income Allocation</h3>
+            <canvas id="allocationChart"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>Budget Usage</h3>
+            <canvas id="usageChart"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>Budget vs Actual</h3>
+            <canvas id="budgetActualChart"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>Expense Breakdown</h3>
+            <canvas id="expenseCategoryChart"></canvas>
+        </div>
+
+    </div>
+
+</div>
 <script>
 
 let db;
@@ -417,7 +445,150 @@ function deleteExpense(id){
 
     tx.oncomplete = renderDashboard;
 }
+let allocationChart = null;
+let usageChart = null;
+let budgetActualChart = null;
+let expenseCategoryChart = null;
 
+function renderCharts(
+    income,
+    totalBudget,
+    totalExpense,
+    remainingBalance,
+    budgetUsage,
+    budgets,
+    expenses
+){
+
+    if(allocationChart) allocationChart.destroy();
+    if(usageChart) usageChart.destroy();
+    if(budgetActualChart) budgetActualChart.destroy();
+    if(expenseCategoryChart) expenseCategoryChart.destroy();
+
+    allocationChart = new Chart(
+        document.getElementById("allocationChart"),
+        {
+            type:"doughnut",
+            data:{
+                labels:[
+                    "Expenses",
+                    "Budget",
+                    "Remaining"
+                ],
+                datasets:[{
+                    data:[
+                        totalExpense,
+                        totalBudget,
+                        Math.max(0, remainingBalance)
+                    ],
+                    backgroundColor:[
+                        "#ef4444",
+                        "#3b82f6",
+                        "#22c55e"
+                    ]
+                }]
+            },
+            options:{
+                responsive:true
+            }
+        }
+    );
+
+    usageChart = new Chart(
+        document.getElementById("usageChart"),
+        {
+            type:"doughnut",
+            data:{
+                labels:["Used","Remaining"],
+                datasets:[{
+                    data:[
+                        Math.min(budgetUsage,100),
+                        Math.max(0,100-budgetUsage)
+                    ],
+                    backgroundColor:[
+                        budgetUsage<70
+                        ? "#22c55e"
+                        : budgetUsage<90
+                          ? "#f59e0b"
+                          : "#ef4444",
+                        "#e5e7eb"
+                    ]
+                }]
+            },
+            options:{
+                cutout:"75%",
+                plugins:{
+                    legend:{
+                        display:false
+                    }
+                }
+            }
+        }
+    );
+
+    budgetActualChart = new Chart(
+        document.getElementById("budgetActualChart"),
+        {
+            type:"bar",
+            data:{
+                labels:["Budget","Expenses"],
+                datasets:[{
+                    label:"Amount (£)",
+                    data:[
+                        totalBudget,
+                        totalExpense
+                    ],
+                    backgroundColor:[
+                        "#3b82f6",
+                        "#ef4444"
+                    ]
+                }]
+            },
+            options:{
+                responsive:true
+            }
+        }
+    );
+
+    let expenseLabels =
+        expenses.length
+        ? expenses.map(x=>x.description)
+        : ["No Expenses"];
+
+    let expenseValues =
+        expenses.length
+        ? expenses.map(x=>x.amount)
+        : [1];
+
+    expenseCategoryChart = new Chart(
+        document.getElementById(
+            "expenseCategoryChart"
+        ),
+        {
+            type:"pie",
+            data:{
+                labels:expenseLabels,
+                datasets:[{
+                    data:expenseValues,
+                    backgroundColor:[
+                        "#3b82f6",
+                        "#22c55e",
+                        "#f59e0b",
+                        "#ef4444",
+                        "#8b5cf6",
+                        "#06b6d4",
+                        "#ec4899"
+                    ]
+                }]
+            },
+            options:{
+                responsive:true
+            }
+        }
+    );
+}
+
+    
 function renderDashboard(){
 
 Promise.all([
