@@ -502,12 +502,13 @@ function addActivityStatus(parent,status="Pending",dateTime=""){
   const div=document.createElement("div");
   div.className="status-activity";
   div.innerHTML=`
-    <select class="status-select">
+     <!--select class="status-select">
       <option value="Pending">Pending</option>
       <option value="Processing">Processing</option>
       <option value="Rejected">Rejected</option>
       <option value="Complete">Complete</option>
-    </select>
+    </select!-->
+    <input type="textbox" class="status-select" Value="" />
     <input type="datetime-local" class="status-date" value="${dateTime}">
     <button type="button" onclick="this.parentElement.remove()">X</button>
   `;
