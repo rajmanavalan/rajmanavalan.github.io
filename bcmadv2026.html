@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -188,7 +189,14 @@
   margin:4px 0;
   flex-wrap:wrap;
 }
-
+.status-color{
+    width:50px;
+    height:34px;
+    padding:2px;
+    cursor:pointer;
+    border:1px solid #ccc;
+    border-radius:4px;
+}
 </style>
 </head>
 <body>
@@ -492,22 +500,60 @@ function renderStatusHistory(container,statusActivities=[]){
       <button type="button" onclick="addActivityStatus(this.parentElement)">+ Status</button>`;
   container.appendChild(wrap);
 
-  statusActivities.forEach(s=>addActivityStatus(wrap,s.status,s.dateTime));
+  
+  statusActivities.forEach(s =>
+    addActivityStatus(
+        wrap,
+        s.status,
+        s.dateTime,
+        s.color || "#3b82f6"
+    )
+);
+
 }
 
-function addActivityStatus(parent,status="Pending",dateTime=""){
-  if(!dateTime) dateTime=new Date().toISOString().slice(0,16);
+function addActivityStatus(
+    parent,
+    status = "Pending",
+    dateTime = "",
+    statusColor = "#3b82f6"
+){
+    if(!dateTime)
+        dateTime = new Date().toISOString().slice(0,16);
 
-  const c=parent.querySelector(".statusActivitiesContainer");
-  const div=document.createElement("div");
-  div.className="status-activity";
-  div.innerHTML=`
-    <input type="textbox" class="status-select" Value="" />
-    <input type="datetime-local" class="status-date" value="${dateTime}">
-    <button type="button" onclick="this.parentElement.remove()">X</button> <span>e.g. Pending, Processing & complete</span>
-  `;
-  div.querySelector(".status-select").value=status;
-  c.appendChild(div);
+    const c = parent.querySelector(".statusActivitiesContainer");
+
+    const div = document.createElement("div");
+    div.className = "status-activity";
+
+    div.innerHTML = `
+        <input
+            type="text"
+            class="status-select"
+            value="${status || ''}"
+            placeholder="Enter Status">
+
+        <input
+            type="color"
+            class="status-color"
+            value="${statusColor}"
+            title="Status Colour">
+
+        <input
+            type="datetime-local"
+            class="status-date"
+            value="${dateTime}">
+
+        <button
+            type="button"
+            onclick="this.parentElement.remove()">
+            X
+        </button>
+
+        <span>Custom status with custom colour</span>
+    `;
+
+    c.appendChild(div);
 }
 
 // ==== Save Module ====
@@ -553,10 +599,14 @@ function addActivityStatus(parent,status="Pending",dateTime=""){
       }
       else value = valueField.querySelector("input,textarea").value;
 
-      const statusActivities = Array.from(div.querySelectorAll(":scope > .status-history .status-activity")).map(s=>({
-        status:s.querySelector(".status-select").value,
-        dateTime:s.querySelector(".status-date").value
-      }));
+   
+	  const statusActivities = Array.from(
+			div.querySelectorAll(":scope > .status-history .status-activity")
+		).map(s => ({
+			status: s.querySelector(".status-select").value,
+			color: s.querySelector(".status-color")?.value || "#3b82f6",
+			dateTime: s.querySelector(".status-date").value
+		}));
       const subActs = Array.from(div.querySelectorAll(".sub-activity")).map(sd => collectActivity(sd));
       return { keyName, label, title, type, value, showChart, statusActivities, subActivities: subActs };
     }
