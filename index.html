@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,10 +44,6 @@ input:checked+.slider:before { transform:translateX(20px);}
 .status-history { margin-top:12px; padding:12px; border:1px solid #e1e7ef; border-radius:8px; background:#fafbff; }
 .status-entry { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:8px; }
 .status-badge { display:inline-flex; align-items:center; justify-content:center; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:.03em; }
-.status-badge.pending { background:#f59e0b; }
-.status-badge.processing { background:#0ea5e9; }
-.status-badge.rejected { background:#ef4444; }
-.status-badge.complete { background:#10b981; }
 .status-datetime { font-size:13px; color:#334155; }
 .chart-area { margin-top:16px; background:#fafafa; border:1px solid #eee; border-radius:6px; padding:12px;}
 .chart-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px;}
@@ -579,15 +576,7 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
-function getStatusClass(status) {
-    switch ((status || '').toLowerCase()) {
-        case 'pending': return 'pending';
-        case 'processing': return 'processing';
-        case 'rejected': return 'rejected';
-        case 'complete': return 'complete';
-        default: return 'pending';
-    }
-}
+
 
 function formatDateTime(dateTime) {
     if (!dateTime) return '';
@@ -596,18 +585,30 @@ function formatDateTime(dateTime) {
 }
 
 function formatStatusHistory(statusActivities) {
+
     if (!statusActivities || statusActivities.length === 0)
         return "";
 
     return statusActivities.map(s => {
+
         const status = escapeHtml(s.status || 'Unknown');
         const datetime = formatDateTime(s.dateTime || '');
-        const statusClass = getStatusClass(s.status);
+        const badgeColor = escapeHtml(
+            s.color || "#3b82f6"
+        );
+
         return `
             <div class="status-entry">
-                <span class="status-badge ${statusClass}">${status}</span>
-                <span class="status-datetime">${datetime}</span>
-            </div>`;
+                <span class="status-badge"
+                      style="background:${badgeColor}">
+                    ${status}
+                </span>
+
+                <span class="status-datetime">
+                    ${datetime}
+                </span>
+            </div>
+        `;
     }).join('');
 }
 /*download*/
