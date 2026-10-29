@@ -63,6 +63,14 @@
             font-weight: bold;
         }
 
+        .formula {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #64748b;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
         input,
         select {
             width: 100%;
@@ -309,21 +317,25 @@
             <h3 id="cardIncomeTitle">💰 Total Income</h3>
             <div id="cardIncome" class="value">₹0</div>
             <div id="cardIncomeMeta" style="margin-top:8px; font-size:12px; color:#4b5563;">0 units</div>
+            <div id="cardIncomeFormula" class="formula"></div>
         </div>
 
         <div class="card">
             <h3>🧾 TDS Deducted</h3>
             <div id="cardTDS" class="value">₹0</div>
+            <div id="tdsFormula" class="formula">Sum of all income entries</div>
         </div>
 
         <div class="card">
             <h3>💸 Total Expenses</h3>
             <div id="cardExpense" class="value">₹0</div>
+            <div id="cardExpenseFormula" class="formula"></div>
         </div>
 
         <div class="card">
             <h3>🧾 Taxable</h3>
             <div id="cardTaxable" class="value">₹0</div>
+            <div id="cardTaxableFormula" class="formula"></div>
         </div>
 
 
@@ -331,33 +343,39 @@
         <div class="card">
             <h3>🧾 Adjustment</h3>
             <div id="cardAdjustment" class="value">₹0</div>
+            <div id="cardAdjustmentFormula" class="formula"></div>
         </div>
 
 
         <div class="card">
             <h3>🇮🇳 India CGT</h3>
             <div id="cardIndiaCGT" class="value">₹0</div>
+            <div id="cardIndiaCGTFormula" class="formula"></div>
         </div>
 
         <div class="card">
             <h3>🧾 Final INR</h3>
             <div id="cardAfterIndia" class="value">₹0</div>
+            <div id="cardAfterIndiaFormula" class="formula"></div>
         </div>
 
          <div class="card">
             <h3>🇬🇧 UK Before CGT</h3>
-            <div id="cardUKBeforeCGT" class="value">₹0</div>
+            <div id="cardUKBeforeCGT" class="value">£0</div>
+            <div id="cardUKBeforeCGTFormula" class="formula"></div>
         </div>
 
 
         <div class="card">
             <h3>🇬🇧 UK CGT</h3>
-            <div id="cardUkCGT" class="value">₹0</div>
+            <div id="cardUkCGT" class="value">£0</div>
+            <div id="cardUkCGTFormula" class="formula"></div>
         </div>
 
         <div class="card">
             <h3>💷 Final GBP</h3>
             <div id="cardFinalGBP" class="value">£0</div>
+            <div id="cardFinalGBPFormula" class="formula"></div>
         </div>
 
     </div>
@@ -438,7 +456,7 @@
         };
 
         function formatINR(v) {
-
+            
             return "₹" +
                 Number(v).toLocaleString(
                     'en-IN',
@@ -930,38 +948,57 @@
                     cardIncomeTitle.innerText = "🏷️ Land Sale";
                     cardIncome.innerText = formatINR(landSaleTotal);
                     cardIncomeMeta.innerText = `${landSaleUnits} ${landSaleUnitType} • ${formatINR(landSalePricePerUnit)}/unit`;
+                    cardIncomeFormula.innerText = `Total Land Sale = ${formatINR(landSaleTotal)}`;
                 } else {
                     cardIncomeTitle.innerText = "💰 Total Income";
                     cardIncome.innerText = formatINR(totalIncome);
                     cardIncomeMeta.innerText = `${income.length} income entries`;
+                    cardIncomeFormula.innerText = `Total Income = ${formatINR(totalIncome)}`;
                 }
 
                 cardExpense.innerText = formatINR(totalExpense);
+                cardExpenseFormula.innerText = `Total Expenses = ${formatINR(totalExpense)}`;
 
                 cardTaxable.innerText = formatINR(taxableAmount);
+                cardTaxableFormula.innerText =
+                    `max(0, ${formatINR(totalIncome)} − ${formatINR(totalExpense)}) = ${formatINR(taxableAmount)}`;
 
                 cardTDS.innerText = formatINR(tdsPaid);
+                tdsFormula.innerText =
+                    `${formatINR(totalIncome)} × ${tds}% = ${formatINR(tdsPaid)}`;
 
                 cardIndiaCGT.innerText = formatINR(indiaCGT);
+                cardIndiaCGTFormula.innerText =
+                    `${formatINR(taxableAmount)} × ${india}% = ${formatINR(indiaCGT)}`;
 
                 cardAdjustment.innerText =
                     adjustment >= 0
                         ? "Refund " + formatINR(adjustment)
                         : "Pay " + formatINR(Math.abs(adjustment));
+                cardAdjustmentFormula.innerText =
+                    `${formatINR(tdsPaid)} − ${formatINR(indiaCGT)} = ${adjustment >= 0 ? "Refund " + formatINR(adjustment) : "Pay " + formatINR(Math.abs(adjustment))}`;
 
                 cardAfterIndia.innerText =
                     formatINR(afterIndiaTax);
+                cardAfterIndiaFormula.innerText =
+                    `${formatINR(totalIncome)} − ${formatINR(tdsPaid)} + (${adjustment < 0 ? "− " : ""}${formatINR(Math.abs(adjustment))}) − ${formatINR(totalExpense)} = ${formatINR(afterIndiaTax)}`;
 
                 cardUkCGT.innerText =
-                    formatINR(ukCGT);
+                    formatGBP(ukCGT);
+                cardUkCGTFormula.innerText =
+                    `${formatGBP(Math.max(0, finalGBP))} × ${uk}% = ${formatGBP(ukCGT)}`;
 
                 cardUKBeforeCGT.innerText =
-                    formatINR(finalGBP);
+                    formatGBP(finalGBP);
+                cardUKBeforeCGTFormula.innerText =
+                    `${formatINR(afterIndiaTax)} ÷ ${rate} = ${formatGBP(finalGBP)}`;
 
                 const finalNetGBP = finalGBP - ukCGT;
 
                 cardFinalGBP.innerText =
                     formatGBP(finalNetGBP);
+                cardFinalGBPFormula.innerText =
+                    `${formatGBP(finalGBP)} − ${formatGBP(ukCGT)} = ${formatGBP(finalNetGBP)}`;
 
                 renderCharts(
                     [totalIncome, totalExpense, tdsPaid, indiaCGT, afterIndiaTax, finalINR],
