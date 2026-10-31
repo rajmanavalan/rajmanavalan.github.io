@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBT Thought Journal</title>
+
+<style>
+:root{
+    --success:#22c55e;
+    --warning:#f59e0b;
+    --danger:#ef4444;
+    --primary:#2563eb;
+    --purple:#8b5cf6;
+    --ink:#1f2937;
+    --muted:#6b7280;
+    --line:#e5e7eb;
+}
+
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    padding:24px;
+    font-family:Segoe UI, Arial, sans-serif;
+    background:#f3f4f6;
+    color:var(--ink);
+}
+
+main{max-width:1100px;margin:0 auto}
+h1{margin:0 0 8px;color:var(--ink)}
+h2{margin:0 0 14px;font-size:20px}
+p{line-height:1.55}
+.intro{margin:0 0 20px;color:#4b5563;max-width:800px}
+
+.stats,.dateBar,.layout,.formGrid,.rangeRow,.actions,.customForm{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.stats{margin-bottom:18px}
+.stat,.card{
+    background:white;
+    border-radius:14px;
+    box-shadow:0 3px 12px rgba(0,0,0,.07);
+}
+.stat{padding:14px 18px;min-width:170px}
+.stat h2{font-size:14px;color:var(--muted);margin:0 0 6px}
+.stat strong{font-size:24px}
+
+.dateBar{
+    align-items:center;
+    padding:14px;
+    background:#fff;
+    border-radius:12px;
+    margin-bottom:18px;
+}
+.dateBar label{font-weight:600}
+
+input,textarea,button{
+    font:inherit;
+}
+input[type="date"],input[type="text"],textarea{
+    padding:10px 12px;
+    border:1px solid #d1d5db;
+    border-radius:8px;
+    background:white;
+    color:var(--ink);
+}
+input[type="date"]{min-width:170px}
+input[type="text"]{min-width:0;width:100%}
+textarea{width:100%;min-height:92px;resize:vertical}
+button{
+    border:0;
+    padding:10px 14px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+}
+button:focus-visible,input:focus-visible,textarea:focus-visible{
+    outline:3px solid #93c5fd;
+    outline-offset:2px;
+}
+.btn-primary{background:var(--primary);color:white}
+.btn-light{background:#e5e7eb;color:#374151}
+.btn-purple{background:var(--purple);color:white}
+.btn-danger{background:#fee2e2;color:#991b1b}
+.btn-small{padding:6px 9px;font-size:13px}
+
+.layout{align-items:flex-start}
+.journal{flex:1 1 620px;min-width:0}
+.sidebar{flex:1 1 280px;min-width:260px}
+.card{padding:20px;margin-bottom:18px}
+.section-title{margin:0 0 5px}
+.section-help{color:var(--muted);font-size:14px;margin:0 0 14px}
+.formGrid{gap:14px}
+.field{flex:1 1 240px;min-width:0;margin-bottom:14px}
+.field.full{flex-basis:100%}
+.field label,.field-label{
+    display:block;
+    font-weight:600;
+    margin:0 0 7px;
+}
+.rangeRow{align-items:center}
+.rangeRow input{flex:1;min-width:120px;accent-color:var(--primary)}
+.rangeValue{min-width:32px;text-align:right;font-weight:700}
+
+.distortionList{display:grid;gap:10px}
+.distortion{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+}
+.distortion input{margin-top:4px;accent-color:var(--purple)}
+.distortion-copy{flex:1}
+.distortion-copy strong{display:block;margin-bottom:3px}
+.distortion-copy span{display:block;color:var(--muted);font-size:13px;line-height:1.4}
+.distortion-actions{display:flex;gap:5px}
+.actions{margin-top:6px}
+.saveBtn{background:var(--success);color:white}
+.message{min-height:22px;margin:12px 0 0;font-weight:600;color:#166534}
+.message.error{color:#b91c1c}
+.privacy{font-size:13px;color:var(--muted);margin:12px 0 0}
+.historyList{display:grid;gap:8px}
+.history-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:9px 10px;
+}
+.history-item span{font-size:14px}
+.empty{color:var(--muted);font-size:14px}
+.customForm{margin-top:14px}
+.customForm input{flex:1 1 140px}
+.customForm button{flex:0 0 auto}
+.saved-badge{
+    display:inline-block;
+    border-radius:20px;
+    background:#dcfce7;
+    color:#166534;
+    padding:5px 10px;
+    font-size:13px;
+    font-weight:700;
+}
+
+@media(max-width:650px){
+    body{padding:16px}
+    .dateBar{align-items:stretch}
+    .dateBar input{width:100%}
+    .dateBar button{flex:1}
+    .card{padding:16px}
+}
+</style>
+</head>
+<body>
+<main>
+    <h1>🧠 CBT Thought Journal</h1>
+    <p class="intro">
+        Distortions: <strong>The Puppeteers of Automatic Thoughts</strong>.
+        Cognitive distortions can pull the strings behind automatic thoughts.
+        Use this journal to notice them, examine the evidence, and find a more balanced perspective.
+    </p>
+
+    <section class="stats" aria-label="Journal summary">
+        <div class="stat">
+            <h2>Days recorded</h2>
+            <strong id="entryCount">0</strong>
+        </div>
+        <div class="stat">
+            <h2>Selected day</h2>
+            <span id="selectedStatus" class="saved-badge">New entry</span>
+        </div>
+    </section>
+
+    <nav class="dateBar" aria-label="Choose journal date">
+        <button class="btn-light" type="button" onclick="moveDate(-1)" aria-label="Previous day">← Previous</button>
+        <label for="entryDate">Journal date</label>
+        <input id="entryDate" type="date" onchange="changeDate()">
+        <button class="btn-light" type="button" onclick="moveDate(1)" aria-label="Next day">Next →</button>
+        <button class="btn-purple" type="button" onclick="goToToday()">Today</button>
+    </nav>
+
+    <div class="layout">
+        <section class="journal">
+            <form id="journalForm" class="card" onsubmit="saveEntry(event)">
+                <h2 class="section-title">Thought record</h2>
+                <p class="section-help">Take a moment with the selected day. You can return to any date and revise its entry.</p>
+
+                <div class="field full">
+                    <label for="situation">Situation — what happened?</label>
+                    <textarea id="situation" placeholder="Describe the situation as factually as you can."></textarea>
+                </div>
+
+                <div class="field full">
+                    <label for="automaticThought">Automatic thought — what went through your mind?</label>
+                    <textarea id="automaticThought" placeholder="Write the thought that showed up, even if it feels uncomfortable."></textarea>
+                </div>
+
+                <div class="formGrid">
+                    <div class="field">
+                        <label for="emotions">Emotions</label>
+                        <input id="emotions" type="text" placeholder="e.g. anxious, disappointed">
+                    </div>
+                    <div class="field">
+                        <label for="intensity">Emotion intensity (0–100)</label>
+                        <div class="rangeRow">
+                            <input id="intensity" type="range" min="0" max="100" value="50" oninput="updateRange('intensity','intensityValue')">
+                            <output id="intensityValue" class="rangeValue" for="intensity">50</output>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field full">
+                    <span class="field-label">Which thinking patterns might be present?</span>
+                    <p class="section-help">Select any that fit. These are clues, not labels or diagnoses.</p>
+                    <div id="entryDistortions" class="distortionList"></div>
+                </div>
+
+                <div class="field full">
+                    <label for="evidenceFor">Evidence supporting the thought</label>
+                    <textarea id="evidenceFor" placeholder="What facts seem to support it?"></textarea>
+                </div>
+                <div class="field full">
+                    <label for="evidenceAgainst">Evidence that doesn't support it / another explanation</label>
+                    <textarea id="evidenceAgainst" placeholder="What facts have you left out? What might a trusted friend say?"></textarea>
+                </div>
+                <div class="field full">
+                    <label for="balancedThought">A more balanced thought</label>
+                    <textarea id="balancedThought" placeholder="Try a fair, compassionate perspective that includes the whole picture."></textarea>
+                </div>
+
+                <div class="formGrid">
+                    <div class="field">
+                        <label for="outcome">What might I do next?</label>
+                        <textarea id="outcome" placeholder="One small, helpful next step"></textarea>
+                    </div>
+                    <div class="field">
+                        <label for="helpfulness">How believable or helpful does the balanced thought feel? (0–100)</label>
+                        <div class="rangeRow">
+                            <input id="helpfulness" type="range" min="0" max="100" value="50" oninput="updateRange('helpfulness','helpfulnessValue')">
+                            <output id="helpfulnessValue" class="rangeValue" for="helpfulness">50</output>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="saveBtn" type="submit">💾 Save this day</button>
+                    <button class="btn-light" type="button" onclick="clearCurrentEntry()">Clear form</button>
+                </div>
+                <p id="saveMessage" class="message" role="status" aria-live="polite"></p>
+                <p class="privacy">Your journal is stored in this browser on this device. It is not synced or backed up online.</p>
+            </form>
+
+            <section class="card">
+                <h2>Recent days</h2>
+                <p class="section-help">Choose a saved date to review or edit that day's entry.</p>
+                <div id="historyList" class="historyList"></div>
+            </section>
+        </section>
+
+        <aside class="sidebar">
+            <section class="card">
+                <h2>Distortions library</h2>
+                <p class="section-help">Manage the thinking patterns available in your daily thought record.</p>
+                <div id="distortionLibrary" class="distortionList"></div>
+                <form id="customDistortionForm" class="customForm" onsubmit="addDistortion(event)">
+                    <input id="newDistortionName" type="text" maxlength="80" placeholder="New distortion" aria-label="New distortion name" required>
+                    <input id="newDistortionDescription" type="text" maxlength="240" placeholder="Short description" aria-label="New distortion description" required>
+                    <button class="btn-purple" type="submit">Add</button>
+                </form>
+            </section>
+        </aside>
+    </div>
+</main>
+
+<script>
+const defaultDistortions = [
+    {id:"catastrophizing", name:"Catastrophizing", description:"Imagining and expecting the worst possible outcome in a situation."},
+    {id:"magnification-negative", name:"Magnification of the Negative", description:"Focusing excessively on the negative aspects of a situation and exaggerating their importance."},
+    {id:"all-or-nothing", name:"All-or-Nothing Thinking", description:"Seeing things in black and white, with no middle ground."},
+    {id:"mind-reading", name:"Mind Reading", description:"Assuming you know what other people are thinking without enough evidence."},
+    {id:"overgeneralization", name:"Overgeneralization", description:"Drawing a broad conclusion from one event or a limited number of experiences."},
+    {id:"personalization", name:"Personalization", description:"Taking excessive responsibility or blame for events outside your control."},
+    {id:"should-statements", name:"Should Statements", description:"Using rigid rules about what you or other people should or must do."}
+];
+const databaseRequest = indexedDB.open("CBTThoughtJournalDB", 1);
+let db;
+let savedSnapshot = "";
+let loadingEntry = false;
+let loadedDate = "";
+let distortionsRendered = false;
+let selectedDistortionsForLoad = [];
+
+function localDateString(date){
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+function escapeHtml(value){
+    return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+    })[character]);
+}
+
+databaseRequest.onupgradeneeded = event => {
+    const database = event.target.result;
+    if(!database.objectStoreNames.contains("entries")){
+        database.createObjectStore("entries", {keyPath:"date"});
+    }
+    if(!database.objectStoreNames.contains("distortions")){
+        const store = database.createObjectStore("distortions", {keyPath:"id"});
+        defaultDistortions.forEach(distortion => store.add(distortion));
+    }
+};
+
+databaseRequest.onsuccess = event => {
+    db = event.target.result;
+    db.onversionchange = () => {
+        db.close();
+        showMessage("The journal database changed in another tab. Please reload this page.", true);
+    };
+    document.getElementById("entryDate").value = localDateString(new Date());
+    loadEntry();
+    loadSummary();
+    loadDistortions();
+};
+
+databaseRequest.onerror = () => {
+    showMessage("Could not open the local journal database. Please check that browser storage is enabled.", true);
+};
+
+function showMessage(message, isError=false){
+    const element = document.getElementById("saveMessage");
+    element.textContent = message;
+    element.classList.toggle("error", isError);
+}
+
+function updateRange(inputId, outputId){
+    document.getElementById(outputId).value = document.getElementById(inputId).value;
+}
+
+function getFormData(){
+    return {
+        situation:document.getElementById("situation").value,
+        automaticThought:document.getElementById("automaticThought").value,
+        emotions:document.getElementById("emotions").value,
+        intensity:Number(document.getElementById("intensity").value),
+        distortions:[...document.querySelectorAll("#entryDistortions input:checked")].map(input => input.value),
+        evidenceFor:document.getElementById("evidenceFor").value,
+        evidenceAgainst:document.getElementById("evidenceAgainst").value,
+        balancedThought:document.getElementById("balancedThought").value,
+        outcome:document.getElementById("outcome").value,
+        helpfulness:Number(document.getElementById("helpfulness").value)
+    };
+}
+
+function currentFormSnapshot(){
+    return JSON.stringify(getFormData());
+}
+
+function hasUnsavedChanges(){
+    return !loadingEntry && savedSnapshot !== "" && currentFormSnapshot() !== savedSnapshot;
+}
+
+function confirmLeaveEntry(){
+    return !hasUnsavedChanges() || confirm("You have unsaved changes. Leave this entry without saving?");
+}
+
+function changeDate(){
+    if(!confirmLeaveEntry()){
+        document.getElementById("entryDate").value = loadedDate;
+        return;
+    }
+    loadEntry();
+}
+
+function moveDate(amount){
+    if(!confirmLeaveEntry()) return;
+    const input = document.getElementById("entryDate");
+    const date = new Date(`${input.value}T12:00:00`);
+    date.setDate(date.getDate() + amount);
+    input.value = localDateString(date);
+    loadEntry();
+}
+
+function goToToday(){
+    if(!confirmLeaveEntry()) return;
+    document.getElementById("entryDate").value = localDateString(new Date());
+    loadEntry();
+}
+
+function loadEntry(){
+    if(!db) return;
+    const date = document.getElementById("entryDate").value;
+    if(!date) return;
+    loadingEntry = true;
+    showMessage("");
+    const transaction = db.transaction(["entries"], "readonly");
+    const request = transaction.objectStore("entries").get(date);
+    request.onsuccess = () => {
+        const entry = request.result;
+        const data = entry || {};
+        selectedDistortionsForLoad = data.distortions || [];
+        document.getElementById("situation").value = data.situation || "";
+        document.getElementById("automaticThought").value = data.automaticThought || "";
+        document.getElementById("emotions").value = data.emotions || "";
+        document.getElementById("intensity").value = data.intensity ?? 50;
+        document.getElementById("intensityValue").value = data.intensity ?? 50;
+        document.getElementById("evidenceFor").value = data.evidenceFor || "";
+        document.getElementById("evidenceAgainst").value = data.evidenceAgainst || "";
+        document.getElementById("balancedThought").value = data.balancedThought || "";
+        document.getElementById("outcome").value = data.outcome || "";
+        document.getElementById("helpfulness").value = data.helpfulness ?? 50;
+        document.getElementById("helpfulnessValue").value = data.helpfulness ?? 50;
+        const selected = new Set(data.distortions || []);
+        document.querySelectorAll("#entryDistortions input").forEach(input => {
+            input.checked = selected.has(input.value);
+        });
+        document.getElementById("selectedStatus").textContent = entry ? "Saved entry" : "New entry";
+        document.getElementById("selectedStatus").classList.toggle("saved-badge", Boolean(entry));
+        loadedDate = date;
+        savedSnapshot = currentFormSnapshot();
+        loadingEntry = false;
+        if(entry) showMessage("Entry loaded. Make changes and save to update this date.");
+    };
+    request.onerror = () => {
+        loadingEntry = false;
+        showMessage("Could not load this day's entry.", true);
+    };
+}
+
+function saveEntry(event){
+    event.preventDefault();
+    if(!db) return showMessage("The journal is not ready yet. Please try again.", true);
+    const date = document.getElementById("entryDate").value;
+    if(!date) return showMessage("Choose a date before saving.", true);
+    const transaction = db.transaction(["entries"], "readwrite");
+    const store = transaction.objectStore("entries");
+    const request = store.get(date);
+    request.onsuccess = () => {
+        const existing = request.result;
+        if(existing && !confirm(`An entry for ${date} already exists. Replace it with these changes?`)){
+            transaction.abort();
+            return;
+        }
+        store.put({date, ...getFormData(), updatedAt:new Date().toISOString()});
+    };
+    transaction.oncomplete = () => {
+        savedSnapshot = currentFormSnapshot();
+        document.getElementById("selectedStatus").textContent = "Saved entry";
+        document.getElementById("selectedStatus").classList.add("saved-badge");
+        showMessage(`Saved for ${date}. You can edit this date again at any time.`);
+        loadSummary();
+    };
+    transaction.onerror = () => showMessage("Could not save this entry. Please try again.", true);
+    transaction.onabort = () => {
+        if(transaction.error) showMessage("The save was cancelled because of a storage error.", true);
+    };
+}
+
+function clearCurrentEntry(){
+    if(!confirm("Clear the fields in this form? This does not delete the saved entry until you save over it.")) return;
+    document.getElementById("journalForm").reset();
+    document.getElementById("intensityValue").value = "50";
+    document.getElementById("helpfulnessValue").value = "50";
+    document.querySelectorAll("#entryDistortions input").forEach(input => input.checked = false);
+    showMessage("Form cleared. Save to replace this date's entry.");
+}
+
+function loadDistortions(){
+    if(!db) return;
+    const request = db.transaction(["distortions"], "readonly").objectStore("distortions").getAll();
+    request.onsuccess = () => renderDistortions(request.result);
+    request.onerror = () => showMessage("Could not load the distortions library.", true);
+}
+
+function renderDistortions(distortions){
+    const selected = distortionsRendered
+        ? new Set([...document.querySelectorAll("#entryDistortions input:checked")].map(input => input.value))
+        : new Set(selectedDistortionsForLoad);
+    const sorted = distortions.sort((a,b) => a.name.localeCompare(b.name));
+    document.getElementById("entryDistortions").innerHTML = sorted.length
+        ? sorted.map(item => `<label class="distortion">
+                <input type="checkbox" value="${escapeHtml(item.id)}" aria-label="Select ${escapeHtml(item.name)}">
+                <span class="distortion-copy"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.description)}</span></span>
+            </label>`).join("")
+        : '<p class="empty">No distortions yet. Add one in the library.</p>';
+    document.getElementById("distortionLibrary").innerHTML = sorted.length
+        ? sorted.map(item => `<div class="distortion">
+                <span class="distortion-copy"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.description)}</span></span>
+                <span class="distortion-actions">
+                    <button class="btn-light btn-small" type="button" onclick="editDistortion('${escapeHtml(item.id)}')">Edit</button>
+                    <button class="btn-danger btn-small" type="button" onclick="deleteDistortion('${escapeHtml(item.id)}')">Delete</button>
+                </span>
+            </div>`).join("")
+        : '<p class="empty">No distortions in your library.</p>';
+    document.querySelectorAll("#entryDistortions input").forEach(input => input.checked = selected.has(input.value));
+    distortionsRendered = true;
+}
+
+function addDistortion(event){
+    event.preventDefault();
+    const name = document.getElementById("newDistortionName").value.trim();
+    const description = document.getElementById("newDistortionDescription").value.trim();
+    if(!name || !description) return;
+    const distortion = {id:`custom-${Date.now()}-${Math.random().toString(36).slice(2,8)}`, name, description};
+    const transaction = db.transaction(["distortions"], "readwrite");
+    transaction.objectStore("distortions").add(distortion);
+    transaction.oncomplete = () => {
+        document.getElementById("customDistortionForm").reset();
+        loadDistortions();
+    };
+    transaction.onerror = () => showMessage("Could not add this distortion.", true);
+}
+
+function editDistortion(id){
+    const request = db.transaction(["distortions"], "readonly").objectStore("distortions").get(id);
+    request.onsuccess = () => {
+        const item = request.result;
+        if(!item) return;
+        const name = prompt("Edit distortion name", item.name);
+        if(name === null) return;
+        const description = prompt("Edit short description", item.description);
+        if(description === null) return;
+        const trimmedName = name.trim();
+        const trimmedDescription = description.trim();
+        if(!trimmedName || !trimmedDescription){
+            showMessage("Distortion name and description cannot be empty.", true);
+            return;
+        }
+        item.name = trimmedName;
+        item.description = trimmedDescription;
+        const transaction = db.transaction(["distortions"], "readwrite");
+        transaction.objectStore("distortions").put(item);
+        transaction.oncomplete = loadDistortions;
+        transaction.onerror = () => showMessage("Could not update this distortion.", true);
+    };
+    request.onerror = () => showMessage("Could not load this distortion for editing.", true);
+}
+
+function deleteDistortion(id){
+    const request = db.transaction(["distortions"], "readonly").objectStore("distortions").get(id);
+    request.onsuccess = () => {
+        const item = request.result;
+        if(!item || !confirm(`Delete "${item.name}" from the distortions library? Existing journal entries will be kept.`)) return;
+        const transaction = db.transaction(["distortions"], "readwrite");
+        transaction.objectStore("distortions").delete(id);
+        transaction.oncomplete = loadDistortions;
+        transaction.onerror = () => showMessage("Could not delete this distortion.", true);
+    };
+    request.onerror = () => showMessage("Could not load this distortion.", true);
+}
+
+function loadSummary(){
+    if(!db) return;
+    const request = db.transaction(["entries"], "readonly").objectStore("entries").getAll();
+    request.onsuccess = () => {
+        const entries = request.result.sort((a,b) => b.date.localeCompare(a.date));
+        document.getElementById("entryCount").textContent = entries.length;
+        const history = document.getElementById("historyList");
+        history.innerHTML = entries.length
+            ? entries.map(entry => `<div class="history-item">
+                    <span>${escapeHtml(new Date(`${entry.date}T12:00:00`).toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"}))}</span>
+                    <button class="btn-light btn-small" type="button" onclick="openHistoryDate('${escapeHtml(entry.date)}')">Review / edit</button>
+                </div>`).join("")
+            : '<p class="empty">No entries yet. Start with today, or choose another date above.</p>';
+    };
+    request.onerror = () => showMessage("Could not load your journal history.", true);
+}
+
+function openHistoryDate(date){
+    if(!confirmLeaveEntry()) return;
+    document.getElementById("entryDate").value = date;
+    loadEntry();
+    window.scrollTo({top:0, behavior:"smooth"});
+}
+</script>
+</body>
+</html>
