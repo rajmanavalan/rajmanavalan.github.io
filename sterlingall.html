@@ -326,7 +326,10 @@
 
     </div>
 
-    <h2>Summary Dashboard</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin: 10px 0 20px;">
+        <h2 style="margin:0;">Summary Dashboard</h2>
+        <button id="btnPdfExport" class="primary" type="button">📄 Download PDF</button>
+    </div>
 
     <div class="grid">
 
@@ -452,6 +455,8 @@
     </div>
 
     <script src="chart.js"></script>
+    <script src="html2canvas.min.js"></script>
+    <script src="jspdf.umd.min.js"></script>
     <script>
 
         let db;
@@ -732,6 +737,60 @@
             document.getElementById('inrChartPanel').classList.toggle('active', currency === 'inr');
             document.getElementById('gbpChartPanel').classList.toggle('active', currency === 'gbp');
         });
+
+        async function downloadCurrentPagePdf() {
+            const pdfButton = document.getElementById('btnPdfExport');
+            if (!pdfButton) return;
+
+            pdfButton.disabled = true;
+            pdfButton.textContent = 'Generating...';
+
+            try {
+                if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
+                    throw new Error('PDF libraries not loaded');
+                }
+
+                const { jsPDF } = window.jspdf;
+                const canvas = await window.html2canvas(document.body, {
+                    scale: 1.2,
+                    useCORS: true,
+                    backgroundColor: '#f3f4f6'
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const imgWidth = pageWidth;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                pdf.save('money-planning-dashboard.pdf');
+            } catch (error) {
+                console.error('PDF generation failed:', error);
+                alert('Unable to generate PDF for this page right now.');
+            } finally {
+                pdfButton.disabled = false;
+                pdfButton.textContent = '📄 Download PDF';
+            }
+        }
+
+        const pdfButton = document.getElementById('btnPdfExport');
+        if (pdfButton) {
+            pdfButton.addEventListener('click', downloadCurrentPagePdf);
+        }
 
         function destroyCharts(charts) {
             charts.forEach(chart => {
