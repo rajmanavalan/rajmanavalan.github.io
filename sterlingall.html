@@ -215,7 +215,16 @@
 
 <body>
 
-    <h1>💷 UK and NRI Dashboard</h1>
+    <h1>💷 Indian Citizens and NRI Dashboard</h1>
+
+    <div class="section" style="margin-top: 15px;">
+        <p style="margin: 0; color: #4b5563; line-height: 1.6;">
+            This dashboard is designed for a person selling an asset in India, whether they are an Indian citizen
+            or an NRI. It helps compare Indian tax impacts with overseas country tax calculations, track income
+            and expenses, review TDS and capital gains, and view live INR vs selected-country currency summaries
+            through interactive charts.
+        </p>
+    </div>
 
     <div class="section">
 
@@ -250,7 +259,7 @@
             </div>
 
             <div>
-                <label>Exchange Rate (INR per selected country currency)</label>
+                <label>Exchange Rate</label>
                 <input id="selectedCountryRate" type="number" value="110">
             </div>
 
@@ -346,7 +355,11 @@
             <div id="cardTaxableFormula" class="formula"></div>
         </div>
 
-
+        <div class="card">
+            <h3>🇮🇳 India CGT</h3>
+            <div id="cardIndiaCGT" class="value">₹0</div>
+            <div id="cardIndiaCGTFormula" class="formula"></div>
+        </div>
 
         <div class="card">
             <h3>🧾 Adjustment</h3>
@@ -355,11 +368,7 @@
         </div>
 
 
-        <div class="card">
-            <h3>🇮🇳 India CGT</h3>
-            <div id="cardIndiaCGT" class="value">₹0</div>
-            <div id="cardIndiaCGTFormula" class="formula"></div>
-        </div>
+        
 
         <div class="card">
             <h3>🧾 Final INR</h3>
@@ -418,15 +427,15 @@
         <div id="gbpChartPanel" class="chart-panel">
             <div class="chart-grid">
                 <div class="chart-card">
-                    <h3>GBP Conversion Overview</h3>
+                    <h3 id="gbpSummaryTitle">GBP Conversion Overview</h3>
                     <canvas id="gbpSummaryChart"></canvas>
                 </div>
                 <div class="chart-card">
-                    <h3>GBP Tax Impact</h3>
+                    <h3 id="gbpTaxTitle">GBP Tax Impact</h3>
                     <canvas id="gbpTaxChart"></canvas>
                 </div>
                 <div class="chart-card">
-                    <h3>GBP Value Mix</h3>
+                    <h3 id="gbpMixTitle">GBP Value Mix</h3>
                     <canvas id="gbpMixChart"></canvas>
                 </div>
             </div>
@@ -722,7 +731,10 @@
             charts.length = 0;
         }
 
-        function renderCharts(inrValues, gbpValues, inrBreakdown, gbpBreakdown, totalIncome, totalExpense) {
+        function renderCharts(inrValues, gbpValues, inrBreakdown, gbpBreakdown, totalIncome, totalExpense, countryConfig = {}) {
+
+            const currencyLabel = (countryConfig.label || 'GBP').toString();
+            const currencySymbol = countryConfig.symbol || '£';
 
             if (!window.Chart) return;
 
@@ -990,6 +1002,7 @@
                 const rate = selectedCountry ? Number(selectedCountryStats.sterlingRate || 110) : 0;
                 const countryLabel = selectedCountryStats.label || 'Country';
                 const countryFlag = selectedCountryStats.flag || '🌍';
+                const selectedCurrency = selectedCountryStats.currency || 'GBP';
 
                 const foreignMetrics = document.getElementById('foreignMetrics');
                 if (foreignMetrics) {
@@ -998,8 +1011,16 @@
 
                 const gbpTab = document.querySelector('.tab-button[data-currency="gbp"]');
                 if (gbpTab) {
+                    gbpTab.textContent = selectedCountry ? selectedCurrency : 'GBP';
                     gbpTab.style.display = selectedCountry ? 'inline-block' : 'none';
                 }
+
+                const gbpSummaryTitle = document.getElementById('gbpSummaryTitle');
+                const gbpTaxTitle = document.getElementById('gbpTaxTitle');
+                const gbpMixTitle = document.getElementById('gbpMixTitle');
+                if (gbpSummaryTitle) gbpSummaryTitle.textContent = selectedCountry ? `${selectedCurrency} Conversion Overview` : 'GBP Conversion Overview';
+                if (gbpTaxTitle) gbpTaxTitle.textContent = selectedCountry ? `${selectedCurrency} Tax Impact` : 'GBP Tax Impact';
+                if (gbpMixTitle) gbpMixTitle.textContent = selectedCountry ? `${selectedCurrency} Value Mix` : 'GBP Value Mix';
 
                 if (!selectedCountry) {
                     document.getElementById('inrChartPanel').classList.add('active');
@@ -1084,7 +1105,7 @@
                 if (selectedCountry) {
                     countryBeforeCGTTitle.innerText = `${countryFlag} ${countryLabel} Before Tax`;
                     countryCGTTitle.innerText = `${countryFlag} ${countryLabel} Tax`;
-                    countryFinalTitle.innerText = `� Final ${countryLabel}`;
+                    countryFinalTitle.innerText = `${countryFlag} Final ${countryLabel}`;
 
                     cardUkCGT.innerText = formatGBP(countryCGT, selectedCountry);
                     cardUkCGTFormula.innerText =
@@ -1113,7 +1134,10 @@
                     [finalGBP, countryCGT, finalNetGBP],
                     totalIncome,
                     totalExpense,
-                    selectedCountry
+                    {
+                        label: selectedCountryStats.label || 'GBP',
+                        symbol: selectedCountryStats.symbol || '£'
+                    }
                 );
 
             });
