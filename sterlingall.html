@@ -367,8 +367,11 @@
             <div id="cardAdjustmentFormula" class="formula"></div>
         </div>
 
-
-        
+        <div class="card">
+            <h3>💵 Cash Flow at Sale</h3>
+            <div id="cardCashFlowAtSale" class="value">₹0</div>
+            <div id="cardCashFlowAtSaleFormula" class="formula"></div>
+        </div>
 
         <div class="card">
             <h3>🧾 Final INR</h3>
@@ -393,6 +396,12 @@
                 <h3 id="countryFinalTitle">💷 Final GBP</h3>
                 <div id="cardFinalGBP" class="value">£0</div>
                 <div id="cardFinalGBPFormula" class="formula"></div>
+            </div>
+
+            <div class="card">
+                <h3 id="countryCashFlowTitle">💵 Cash Flow at Sale</h3>
+                <div id="cardCountryCashFlow" class="value">£0</div>
+                <div id="cardCountryCashFlowFormula" class="formula"></div>
             </div>
         </div>
 
@@ -1018,6 +1027,9 @@
                 const gbpSummaryTitle = document.getElementById('gbpSummaryTitle');
                 const gbpTaxTitle = document.getElementById('gbpTaxTitle');
                 const gbpMixTitle = document.getElementById('gbpMixTitle');
+                const countryCashFlowTitle = document.getElementById('countryCashFlowTitle');
+                const cardCountryCashFlow = document.getElementById('cardCountryCashFlow');
+                const cardCountryCashFlowFormula = document.getElementById('cardCountryCashFlowFormula');
                 if (gbpSummaryTitle) gbpSummaryTitle.textContent = selectedCountry ? `${selectedCurrency} Conversion Overview` : 'GBP Conversion Overview';
                 if (gbpTaxTitle) gbpTaxTitle.textContent = selectedCountry ? `${selectedCurrency} Tax Impact` : 'GBP Tax Impact';
                 if (gbpMixTitle) gbpMixTitle.textContent = selectedCountry ? `${selectedCurrency} Value Mix` : 'GBP Value Mix';
@@ -1039,22 +1051,34 @@
                 /* Indian CGT liability */
                 const indiaCGT = taxableAmount * india / 100;
 
-                /* Compare TDS with CGT */
-                const adjustment = tdsPaid - indiaCGT;
+                /* Net amount after expenses is taxable.
+                   India CGT is deducted from that taxable amount.
+                   TDS is added back as follows:
+                   - if India CGT − TDS > 0: add TDS back
+                   - else if TDS − India CGT > 0: add only the net difference
+                   - else: add 0 */
+                const taxableNet = Math.max(0, totalIncome - totalExpense);
+                const indianTaxNet = indiaCGT - tdsPaid;
+                const pendingTax = Math.max(0, indianTaxNet);
+                const refundAmount = Math.max(0, -indianTaxNet);
+                const tdsToAddBack = indianTaxNet > 0
+                    ? tdsPaid
+                    : (tdsPaid > indiaCGT ? tdsPaid - indiaCGT : 0);
 
                 /*
-                adjustment > 0  => refund/credit
-                adjustment < 0  => more Indian tax due
+                indianTaxNet > 0  => tax pending, add full TDS back
+                TDS > India CGT   => add only the net difference TDS − India CGT
                 */
 
-                /* Position after India tax settlement */
-                const afterIndiaTax = ((totalIncome - tdsPaid) + adjustment) - totalExpense;
+                /* Final INR: taxable net after expenses, less India CGT, then add TDSBack */
+                const finalINR = taxableNet - indiaCGT + tdsToAddBack;
+                const afterIndiaTax = finalINR;
 
-                /* Final INR */
-                const finalINR = afterIndiaTax;
+                const saleValueForCashFlow = landSaleTotal > 0 ? landSaleTotal : totalIncome;
+                const cashFlowAtSale = saleValueForCashFlow - tdsPaid - totalExpense;
 
                 /* Final selected country GBP value */
-                const finalGBP = selectedCountry ? (afterIndiaTax / rate) : 0;
+                const finalGBP = selectedCountry ? (finalINR / rate) : 0;
 
                 /* Country tax */
                 const countryCGT = selectedCountry ? Math.max(0, finalGBP) * countryTax / 100 : 0;
@@ -1089,23 +1113,29 @@
                     `${formatINR(taxableAmount)} × ${india}% = ${formatINR(indiaCGT)}`;
 
                 cardAdjustment.innerText =
-                    adjustment >= 0
-                        ? "Refund " + formatINR(adjustment)
-                        : "Pay " + formatINR(Math.abs(adjustment));
+                    indianTaxNet > 0
+                        ? "−" + formatINR(indianTaxNet)
+                        : "Refund " + formatINR(Math.abs(indianTaxNet));
                 cardAdjustmentFormula.innerText =
-                    `${formatINR(tdsPaid)} − ${formatINR(indiaCGT)} = ${adjustment >= 0 ? "Refund " + formatINR(adjustment) : "Pay " + formatINR(Math.abs(adjustment))}`;
+                    `${formatINR(indiaCGT)} − ${formatINR(tdsPaid)} = ${indianTaxNet > 0 ? "−" + formatINR(indianTaxNet) : "Refund " + formatINR(Math.abs(indianTaxNet))}`;
+
+                cardCashFlowAtSale.innerText = formatINR(cashFlowAtSale);
+                cardCashFlowAtSaleFormula.innerText =
+                    `(${formatINR(saleValueForCashFlow)} − ${formatINR(tdsPaid)} − ${formatINR(totalExpense)}) = ${formatINR(cashFlowAtSale)}`;
 
                 cardAfterIndia.innerText =
-                    formatINR(afterIndiaTax);
+                    formatINR(finalINR);
                 cardAfterIndiaFormula.innerText =
-                    `${formatINR(totalIncome)} − ${formatINR(tdsPaid)} + (${adjustment < 0 ? "− " : ""}${formatINR(Math.abs(adjustment))}) − ${formatINR(totalExpense)} = ${formatINR(afterIndiaTax)}`;
+                    `(${formatINR(taxableNet)} − ${formatINR(indiaCGT)}) + ${formatINR(tdsToAddBack)} = ${formatINR(finalINR)}`;
 
                 const finalNetGBP = selectedCountry ? finalGBP - countryCGT : 0;
+                const countryCashFlowAtSale = selectedCountry ? (cashFlowAtSale / rate) : 0;
 
                 if (selectedCountry) {
                     countryBeforeCGTTitle.innerText = `${countryFlag} ${countryLabel} Before Tax`;
                     countryCGTTitle.innerText = `${countryFlag} ${countryLabel} Tax`;
                     countryFinalTitle.innerText = `${countryFlag} Final ${countryLabel}`;
+                    countryCashFlowTitle.innerText = `${countryFlag} Cash Flow at Sale`;
 
                     cardUkCGT.innerText = formatGBP(countryCGT, selectedCountry);
                     cardUkCGTFormula.innerText =
@@ -1118,6 +1148,10 @@
                     cardFinalGBP.innerText = formatGBP(finalNetGBP, selectedCountry);
                     cardFinalGBPFormula.innerText =
                         `${formatGBP(finalGBP, selectedCountry)} − ${formatGBP(countryCGT, selectedCountry)} = ${formatGBP(finalNetGBP, selectedCountry)}`;
+
+                    cardCountryCashFlow.innerText = formatGBP(countryCashFlowAtSale, selectedCountry);
+                    cardCountryCashFlowFormula.innerText =
+                        `${formatINR(cashFlowAtSale)} ÷ ${rate} = ${formatGBP(countryCashFlowAtSale, selectedCountry)}`;
                 } else {
                     cardUkCGT.innerText = formatGBP(0, 'uk');
                     cardUkCGTFormula.innerText = 'No country selected';
@@ -1125,12 +1159,14 @@
                     cardUKBeforeCGTFormula.innerText = 'India-only calculation';
                     cardFinalGBP.innerText = formatGBP(0, 'uk');
                     cardFinalGBPFormula.innerText = 'India-only net';
+                    cardCountryCashFlow.innerText = formatGBP(0, 'uk');
+                    cardCountryCashFlowFormula.innerText = 'India-only cash flow';
                 }
 
                 renderCharts(
                     [totalIncome, totalExpense, tdsPaid, indiaCGT, afterIndiaTax, finalINR],
                     [finalGBP, countryCGT, finalNetGBP],
-                    [tdsPaid, indiaCGT, Math.abs(adjustment)],
+                    [tdsPaid, indiaCGT, Math.abs(indianTaxNet)],
                     [finalGBP, countryCGT, finalNetGBP],
                     totalIncome,
                     totalExpense,
