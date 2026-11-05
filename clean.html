@@ -175,6 +175,65 @@ button{
     color:#4b5563;
 }
 
+.switchRow{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:12px;
+    padding-top:10px;
+    border-top:1px solid #e5e7eb;
+}
+
+.toggleLabel{
+    font-size:13px;
+    font-weight:700;
+    color:#374151;
+}
+
+.switch{
+    position:relative;
+    display:inline-block;
+    width:52px;
+    height:30px;
+}
+
+.switch input{
+    opacity:0;
+    width:0;
+    height:0;
+}
+
+.slider{
+    position:absolute;
+    cursor:pointer;
+    inset:0;
+    background:#d1d5db;
+    border-radius:999px;
+    transition:all .2s ease;
+}
+
+.slider:before{
+    content:"";
+    position:absolute;
+    height:22px;
+    width:22px;
+    left:4px;
+    top:4px;
+    border-radius:50%;
+    background:white;
+    transition:all .2s ease;
+    box-shadow:0 2px 5px rgba(0,0,0,.2);
+}
+
+.switch input:checked + .slider{
+    background:var(--primary);
+}
+
+.switch input:checked + .slider:before{
+    transform:translateX(22px);
+}
+
 .overdue{
     color:var(--danger);
     font-weight:bold;
@@ -305,27 +364,79 @@ function addArea(){
     };
 }
 
-function getStatus(days){
+function getStatus(days, item = {}){
 
-    if(days >= 7){
+    const customEnabled = !!item.useCustomDays;
+    const overrideDays = Number(item.overrideDays) || 7;
+    const threshold = customEnabled ? overrideDays : 7;
+    const warningThreshold = Math.max(0, threshold - 2);
+
+    if(days >= threshold){
 
         return {
             cls:"red",
-            text:"Cleaning Due"
+            text: customEnabled ? "Due" : "Cleaning Due",
+            buttonText: customEnabled ? "Actioned Today" : "Cleaned Today"
         };
     }
 
-    if(days >= 5){
+    if(days >= warningThreshold){
 
         return {
             cls:"amber",
-            text:"Cleaning Due Soon"
+            text: customEnabled ? "Due Soon" : "Cleaning Due Soon",
+            buttonText: customEnabled ? "Actioned Today" : "Cleaned Today"
         };
     }
 
     return {
         cls:"green",
-        text:"Recently Cleaned"
+        text: customEnabled ? "Recently Done" : "Recently Cleaned",
+        buttonText: customEnabled ? "Actioned Today" : "Cleaned Today"
+    };
+}
+
+function toggleCustomMode(id, enabled){
+
+    let tx = db.transaction(
+        ["areas"],
+        "readwrite"
+    );
+
+    let store = tx.objectStore("areas");
+    let req = store.get(id);
+
+    req.onsuccess = function(){
+
+        let item = req.result;
+
+        if(enabled){
+
+            let overrideDays = prompt(
+                "How many days should override the cleaning cycle?",
+                item.overrideDays || 7
+            );
+
+            if(overrideDays === null)
+                return;
+
+            overrideDays = Number(overrideDays);
+
+            if(!Number.isInteger(overrideDays) || overrideDays < 1){
+
+                alert("Please enter a valid whole number of days greater than 0.");
+                return;
+            }
+
+            item.useCustomDays = true;
+            item.overrideDays = overrideDays;
+        }
+        else{
+            item.useCustomDays = false;
+        }
+
+        store.put(item);
+        loadAreas();
     };
 }
 
@@ -526,14 +637,17 @@ function render(data){
             );
 
         const status =
-            getStatus(days);
+            getStatus(days, item);
 
         if(status.cls==="red")
             dueCount++;
 
+        const threshold =
+            Number(item.overrideDays) || 7;
+
         const overdue =
-            days > 7
-            ? `(Overdue by ${days-7} day(s))`
+            days > threshold
+            ? `(Overdue by ${days-threshold} day(s))`
             : "";
 
         html += `
@@ -562,12 +676,23 @@ function render(data){
                 ${status.text}
             </div>
 
+            <div class="switchRow">
+                <span class="toggleLabel">Custom days</span>
+                <label class="switch">
+                    <input
+                        type="checkbox"
+                        ${item.useCustomDays ? "checked" : ""}
+                        onchange="toggleCustomMode(${item.id}, this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
             <div class="actions">
 
                 <button
                     class="cleanBtn"
                     onclick="markCleaned(${item.id})">
-                    ✓ Cleaned Today
+                    ✓ ${status.buttonText}
                 </button>
 
                 <button
