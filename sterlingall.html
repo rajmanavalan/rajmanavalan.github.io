@@ -533,6 +533,15 @@
             return selectedCountry === '' ? 1 : 14.95;
         }
 
+        function resolveTdsPercent(config, country) {
+            const selectedCountry = (country || '').toLowerCase();
+            const fromConfig = Number(config && config.tdsPercent);
+            if (Number.isFinite(fromConfig) && fromConfig > 0) {
+                return fromConfig;
+            }
+            return getDefaultTdsPercent(selectedCountry);
+        }
+
         function getSelectedCountryConfig(config, country) {
             const selectedCountry = (country || '').toLowerCase();
             const storedCountry = (config && config.countrySettings && config.countrySettings[selectedCountry]) || {};
@@ -551,13 +560,11 @@
         function syncSelectedCountryInputs(config) {
             const selectedCountry = (config && config.selectedCountry) || '';
             const country = getSelectedCountryConfig(config, selectedCountry);
-            const savedTdsPercent = Number(config && config.tdsPercent);
+            const resolvedTds = resolveTdsPercent(config, selectedCountry);
             document.getElementById('countrySelect').value = selectedCountry;
             document.getElementById('selectedCountryTax').value = selectedCountry ? country.tax : 0;
             document.getElementById('selectedCountryRate').value = selectedCountry ? country.sterlingRate : 110;
-            document.getElementById('tdsPercent').value = Number.isFinite(savedTdsPercent) && savedTdsPercent > 0
-                ? savedTdsPercent
-                : getDefaultTdsPercent(selectedCountry);
+            document.getElementById('tdsPercent').value = resolvedTds;
         }
 
         function saveConfig() {
@@ -1076,9 +1083,11 @@
                 incomeList.innerHTML = incomeHtml;
                 expenseList.innerHTML = expenseHtml;
 
-                const tds = Number(config.tdsPercent || 0);
-                const india = Number(config.indiaTax || 0);
                 const selectedCountry = (config.selectedCountry || '').toLowerCase();
+                const liveTdsValue = document.getElementById('tdsPercent') ? Number(document.getElementById('tdsPercent').value || 0) : 0;
+                const liveIndiaTaxValue = document.getElementById('indiaTax') ? Number(document.getElementById('indiaTax').value || 0) : 0;
+                const tds = Number.isFinite(liveTdsValue) && liveTdsValue > 0 ? liveTdsValue : resolveTdsPercent(config, selectedCountry);
+                const india = Number.isFinite(liveIndiaTaxValue) && liveIndiaTaxValue >= 0 ? liveIndiaTaxValue : Number(config.indiaTax || 12.5);
                 const selectedCountryStats = getSelectedCountryConfig(config, selectedCountry);
                 const countryTax = selectedCountry ? selectedCountryStats.tax : 0;
                 const rate = selectedCountry ? Number(selectedCountryStats.sterlingRate || 110) : 0;
