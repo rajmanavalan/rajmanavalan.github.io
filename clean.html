@@ -412,9 +412,11 @@ function toggleCustomMode(id, enabled){
 
         if(enabled){
 
+            const defaultDays = Number(item.overrideDays) || 7;
+
             let overrideDays = prompt(
                 "How many days should override the cleaning cycle?",
-                item.overrideDays || 7
+                defaultDays
             );
 
             if(overrideDays === null)
@@ -643,11 +645,13 @@ function render(data){
             dueCount++;
 
         const threshold =
-            Number(item.overrideDays) || 7;
+            item.useCustomDays
+            ? (Number(item.overrideDays) || 7)
+            : 7;
 
         const overdue =
-            days > threshold
-            ? `(Overdue by ${days-threshold} day(s))`
+            days >= threshold
+            ? `(Overdue by ${Math.max(days-threshold, 0)} day(s))`
             : "";
 
         html += `
@@ -666,6 +670,11 @@ function render(data){
             <div class="info">
                 Days Since Cleaning:
                 <strong>${days}</strong>
+            </div>
+
+            <div class="info">
+                Assigned Days:
+                <strong>${item.useCustomDays ? `${item.overrideDays}d` : "7d"}</strong>
             </div>
 
             <div class="info overdue">
