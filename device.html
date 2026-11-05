@@ -20,6 +20,29 @@ body{
     background:#f3f4f6;
 }
 
+.topnav{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+}
+
+.topnav a{
+    display:inline-block;
+    text-decoration:none;
+    background:white;
+    color:#1f2937;
+    padding:10px 14px;
+    border-radius:10px;
+    font-weight:600;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.topnav a.active{
+    background:var(--primary);
+    color:white;
+}
+
 .header{
     display:flex;
     gap:10px;
@@ -108,6 +131,11 @@ h1{
 </style>
 </head>
 <body>
+
+<nav class="topnav">
+    <a href="device.html" class="active">Device Tracker</a>
+    <a href="clean.html">Cleaning Tracker</a>
+</nav>
 
 <h1>🔋 Device Charge Tracker</h1>
 
