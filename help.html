@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Model Data Help File</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      color: #00698f;
+    }
+  </style>
+</head>
+<body>
+  <h1>Business Continuity Schema Help</h1>
+
+  <h2>Overview</h2>
+  <p>The business continuity schema file contains a collection of activities, each with its own set of data. The file is organized into an array of objects, with each object representing a single activity.</p>
+
+  <h3>Activity Structure</h3>
+  <ul>
+    <li>keyName: A unique identifier for the activity</li>
+    <li>label: A human-readable label for the activity</li>
+    <li>title: A title or name for the activity</li>
+    <li>type: The type of data that is being stored for this activity (e.g. text, number, etc.)</li>
+    <li>value: The value of the data being stored for this activity</li>
+    <li>showChart: A boolean indicating whether the data should be displayed as a chart</li>
+    <li>statusActivities: An array of status updates for this activity (e.g. pending, processing, complete)</li>
+    <li>subActivities: An array of sub-activities that are part of this activity</li>
+  </ul>
+
+  <h3>Activity Types</h3>
+  <ul>
+    <li>text: Plain text data</li>
+    <li>html: HTML-formatted text data</li>
+    <li>boolean: A boolean value (true or false)</li>
+    <li>int: An integer value</li>
+    <li>float: A floating-point value</li>
+    <li>percentage: A percentage value</li>
+    <li>slider: A slider value</li>
+    <li>timeline: A timeline value</li>
+    <li>duration: A duration value (e.g. number of days)</li>
+    <li>severity: A severity level (e.g. high, low)</li>
+    <li>trend: A trend direction (e.g. up, down)</li>
+    <li>dr: A "dr" value (not clear what this represents without more context)</li>
+  </ul>
+
+  <h3>Sub-Activities</h3>
+  <p>Sub-activities are activities that are part of a larger activity. They are represented by objects that contain similar properties to the main activity.</p>
+
+  <h2>Example</h2>
+  <p>The following is an example of an activity in the model data file:</p>
+
+  <pre>
+  {
+    "keyName": "A",
+    "label": "A",
+    "title": "A1",
+    "type": "text",
+    "value": "this is text area",
+    "showChart": false,
+    "statusActivities": [
+      {
+        "status": "Pending/Processing/Complete etc...",
+        "color": "#3b82f6",
+        "dateTime": "2026-11-06T11:11"
+      }
+    ],
+    "subActivities": [
+      {
+        "keyName": "A1",
+        "label": "A1",
+        "title": "Pending/Processing/Complete etc...",
+        "type": "text",
+        "value": "Sub Text area",
+        "showChart": false,
+        "statusActivities": [
+          {
+            "status": "Pending/Processing/Complete etc...",
+            "color": "#3b82f6",
+            "dateTime": "2026-11-06T11:11"
+          }
+        ],
+        "subActivities": []
+      }
+    ]
+  }
+  </pre>
+
+  <p>This example shows an activity with a key name of "A", a label of "A", and a title of "A1". It also has a type of "text", a value of "this is text area", and a boolean indicating whether to show a chart.</p>
+
+  <h2>Accessing the Business Continuity Schema File</h2>
+  <p>The business continuity schema file can be accessed by opening the file in a text editor or IDE, or by using a programming language to read the file and parse its contents.</p>
+</body>
+</html>
