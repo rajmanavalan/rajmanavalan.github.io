@@ -106,6 +106,8 @@ input:checked+.slider:before { transform:translateX(20px);}
 /* right actions (optional) */
 .actions {display:flex;gap:8px;flex:0 0 auto;}
 .actions button {padding: 6px 10px;border-radius:6px;border:1px solid rgba(0,0,0,0.06);background:white;cursor:pointer;}
+.actions a {padding:6px 10px;border-radius:6px;border:1px solid rgba(0,0,0,0.06);background:white;color:var(--primary);font-weight:600;text-decoration:none;}
+.actions a:hover {background:#f0f9ff;}
 </style>
 </head>
 <body>
@@ -124,7 +126,9 @@ input:checked+.slider:before { transform:translateX(20px);}
       </div>
 
       <div class="actions">
+        <a href="help.html">Help</a>
         <button id="btnEdit">✏️</button>
+        <button id="btnSample" type="button" title="Load sample JSON" aria-label="Load sample JSON" hidden>📥</button>
         <button id="btnPDF">📄</button>
       </div>
     </div>
@@ -192,6 +196,7 @@ function loadModules() {
     const modules = request.result || [];
     const select = document.getElementById("moduleSelect");
     const container = document.getElementById("report");
+    document.getElementById("btnSample").hidden = modules.length > 0;
 
     // Populate dropdown
     select.innerHTML = `<option value="">-- Select Module --</option>`;
@@ -519,6 +524,55 @@ function EditPlaningReport(){
     document.location.href="bcmadv2026.html";
 }
 
+async function loadSampleData(){
+    const button = document.getElementById("btnSample");
+    button.disabled = true;
+    try {
+        const response = await fetch("sample.json");
+        if (!response.ok) throw new Error(`Sample JSON request failed (${response.status})`);
+        const data = await response.json();
+        if (!Array.isArray(data) || data.length === 0 || data.some(entry =>
+            !entry || typeof entry.module !== "string" ||
+            typeof entry.purpose !== "string" || !Array.isArray(entry.activities)
+        )) {
+            throw new Error("The sample JSON does not contain valid report modules.");
+        }
+
+        const tx = db.transaction([storeName], "readwrite");
+        const store = tx.objectStore(storeName);
+        const check = store.getAll();
+        check.onsuccess = () => {
+            if (check.result.length > 0) {
+                tx.abort();
+                return;
+            }
+            data.forEach(entry => {
+                const sample = {...entry};
+                delete sample.id;
+                store.add(sample);
+            });
+        };
+        check.onerror = () => tx.abort();
+        tx.oncomplete = () => loadModules();
+        tx.onabort = () => {
+            button.disabled = false;
+            if (tx.error) {
+                alert(`Could not load sample data: ${tx.error.message}`);
+            } else {
+                loadModules();
+                alert("A report entry already exists, so the sample was not loaded.");
+            }
+        };
+        tx.onerror = () => {
+            button.disabled = false;
+            alert(`Could not load sample data: ${tx.error?.message || "IndexedDB error"}`);
+        };
+    } catch (error) {
+        button.disabled = false;
+        alert(`Could not load sample data: ${error.message}`);
+    }
+}
+
 function generateWordCloud(id,input) {
     //const input = document.getElementById("textInput").value;
 
@@ -650,6 +704,7 @@ async function downloadPDF() {
 document.getElementById('btnEdit').addEventListener('click', () => {
     EditPlaningReport();
 });
+document.getElementById('btnSample').addEventListener('click', loadSampleData);
 document.getElementById('btnPDF').addEventListener('click', () => {
     downloadPDF();
 });

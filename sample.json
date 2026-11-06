@@ -1,0 +1,145 @@
+[
+  {
+    "module": "Sample Business Continuity Plan",
+    "purpose": "Example activities using the data types and structure from modeldata.json. Edit or replace this sample with your own plan.",
+    "activities": [
+      {
+        "keyName": "A",
+        "label": "Incident Response",
+        "title": "Response lead and escalation",
+        "type": "text",
+        "value": "Notify the response lead, assess the impact, and contact the relevant teams.",
+        "showChart": false,
+        "statusActivities": [
+          {
+            "status": "Review contact list",
+            "color": "#3b82f6",
+            "dateTime": "2026-11-06T09:00"
+          }
+        ],
+        "subActivities": [
+          {
+            "keyName": "A1",
+            "label": "Escalation notes",
+            "title": "Response detail",
+            "type": "html",
+            "value": "<p>Escalate incidents to the <strong>response lead</strong>.</p><ul><li>Record the impact</li><li>Notify affected teams</li></ul>",
+            "showChart": false,
+            "statusActivities": [],
+            "subActivities": []
+          }
+        ]
+      },
+      {
+        "keyName": "B",
+        "label": "Backup Verification",
+        "title": "Latest backup verified",
+        "type": "boolean",
+        "value": "true",
+        "showChart": false,
+        "statusActivities": [],
+        "subActivities": []
+      },
+      {
+        "keyName": "C",
+        "label": "Services Restored",
+        "title": "Number of services",
+        "type": "int",
+        "value": "10",
+        "showChart": false,
+        "statusActivities": [],
+        "subActivities": []
+      },
+      {
+        "keyName": "D",
+        "label": "Recovery Progress",
+        "title": "Progress percentage",
+        "type": "percentage",
+        "value": "72.5",
+        "showChart": false,
+        "statusActivities": [],
+        "subActivities": []
+      },
+      {
+        "keyName": "E",
+        "label": "Recovery Readiness",
+        "title": "Readiness score",
+        "type": "slider",
+        "value": "67",
+        "showChart": false,
+        "statusActivities": [],
+        "subActivities": []
+      },
+      {
+        "keyName": "F",
+        "label": "Estimated Recovery Time",
+        "title": "Recovery duration",
+        "type": "duration",
+        "value": "2 days",
+        "showChart": false,
+        "statusActivities": [],
+        "subActivities": []
+      },
+      {
+        "keyName": "G",
+        "label": "Estimated Cost",
+        "title": "Recovery cost estimate",
+        "type": "float",
+        "value": "122.5",
+        "showChart": false,
+        "statusActivities": [],
+        "subActivities": []
+      },
+      {
+        "keyName": "H",
+        "label": "Recovery Deadline",
+        "title": "Target completion",
+        "type": "timeline",
+        "value": "2026-11-07T17:00",
+        "showChart": false,
+        "statusActivities": [],
+        "subActivities": []
+      },
+      {
+        "keyName": "I",
+        "label": "Service Impact",
+        "title": "Impact severity",
+        "type": "severity",
+        "value": "high",
+        "showChart": false,
+        "statusActivities": [],
+        "subActivities": []
+      },
+      {
+        "keyName": "J",
+        "label": "Recovery Trend",
+        "title": "Progress direction",
+        "type": "trend",
+        "value": "up",
+        "showChart": false,
+        "statusActivities": [],
+        "subActivities": []
+      },
+      {
+        "keyName": "K",
+        "label": "Disaster Recovery",
+        "title": "DR readiness",
+        "type": "dr",
+        "value": "active",
+        "showChart": false,
+        "statusActivities": [],
+        "subActivities": []
+      },
+      {
+        "keyName": "L",
+        "label": "Recovery Priorities",
+        "title": "Priority word cloud",
+        "type": "wordcloud",
+        "value": "Critical services:5, Data recovery:4, Communications:3, Team readiness:2",
+        "showChart": false,
+        "statusActivities": [],
+        "subActivities": []
+      }
+    ]
+  }
+]
