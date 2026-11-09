@@ -157,7 +157,7 @@
 		  "subActivities": [
 			{
 			  "keyName": "M1",
-			  "label": "Recovery Time Objective",
+			  "label": "Recovery Time Objective (RTO)",
 			  "title": "Target restoration time",
 			  "type": "duration",
 			  "value": "4 hours",
@@ -167,7 +167,7 @@
 			},
 			{
 			  "keyName": "M2",
-			  "label": "Recovery Point Objective",
+			  "label": "Recovery Point Objective (RPO)",
 			  "title": "Maximum acceptable data loss",
 			  "type": "duration",
 			  "value": "15 minutes",

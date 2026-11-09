@@ -432,6 +432,11 @@ function renderModule(mod,idx){
                                 subFloatData.push({ name: sa.label||"Activity", value: Math.round(result,2)||0 });
                             valueMap[sa.keyName]=result;
                         }
+                        else if(sa.type==="boolean"){
+                            const isChecked = String(sa.value).toLowerCase() === "true";
+                            subControl=`<label class="switch"><input type="checkbox" disabled ${isChecked ? "checked" : ""}><span class="slider"></span></label>`;
+                            valueMap[sa.keyName]= isChecked ? 1 : 0;
+                        }
                         else if(sa.type==="int" ||sa.type==="chartfloat"){
                             subControl=`<input type="number" value="${sa.value||0}" readonly>`;
                             subFloatData.push({name: sa.label||"Sub-Activity", value: parseFloat(sa.value)||0});
@@ -440,6 +445,11 @@ function renderModule(mod,idx){
                         else if(sa.type==="float"){
                             subControl=`<input type="number" value="${sa.value||0}" readonly>`;
                             //subFloatData.push({name: sa.label||"Sub-Activity", value: parseFloat(sa.value)||0});
+                            valueMap[sa.keyName]= parseFloat(sa.value)||0;
+                        }
+                        else if(sa.type==="slider"){
+                            let [min,max,val]=[0,100,sa.value];
+                            subControl=`<div class="range-wrapper"><input type="range" min="${min}" max="${max}" value="${val}" disabled><output>${val}</output></div>`;
                             valueMap[sa.keyName]= parseFloat(sa.value)||0;
                         }
                         else if(sa.type==="percentage"){
@@ -483,6 +493,8 @@ function renderModule(mod,idx){
                             subControl=`<input type="text" value="${sa.value||""}" readonly>`;
                         }
                         li.innerHTML=`<strong>${getActivityDisplayName(sa, "Sub-Activity")} :</strong> ${subControl}`;
+                        const subSliderEl = li.querySelector("input[type='range']");
+                        if (subSliderEl) styleSlider(subSliderEl);
                         if (sa && sa.subActivities && sa.subActivities.length > 0) {
                             renderNestedActivityLabels(li, sa.subActivities, "Sub-Activity");
                         }
