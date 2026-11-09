@@ -187,6 +187,37 @@ function stringParse(str1,valueMap){
     });
     return result;
 }
+
+function getActivityDisplayName(activity, fallback = "Activity") {
+    if (!activity) return fallback;
+    if (activity.label && activity.keyName) return `${activity.label} (${activity.keyName})`;
+    return activity.label || activity.keyName || fallback;
+}
+
+function renderNestedActivityLabels(container, activities, fallback = "Sub-Activity") {
+    if (!activities || !activities.length) return;
+
+    const list = document.createElement("ul");
+    list.style.margin = "6px 0 0 18px";
+    list.style.paddingLeft = "18px";
+
+    activities.forEach(item => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${getActivityDisplayName(item, fallback)}</strong>`;
+
+        if (item && item.subActivities && item.subActivities.length > 0) {
+            const childWrap = document.createElement("div");
+            childWrap.className = "sub-activities";
+            renderNestedActivityLabels(childWrap, item.subActivities, "Sub-Activity");
+            li.appendChild(childWrap);
+        }
+
+        list.appendChild(li);
+    });
+
+    container.appendChild(list);
+}
+
 function loadModules() {
   const tx = db.transaction([storeName], "readonly");
   const store = tx.objectStore(storeName);
@@ -351,12 +382,12 @@ function renderModule(mod,idx){
                     `;
                 } else {
                     let html_s = `
-                    <label>${act.label || "Activity"} ${act.keyName ? "(" + act.keyName + ")" : ""} :</label>
+                    <label>${getActivityDisplayName(act, "Activity")} :</label>
                     <div class="activity-value-card">
                         ${control}
                         ${statusText && statusText.trim() !== "" ? `
                         <div class="status-history">
-                            <div style="font-weight:700; margin-bottom:8px;">Status History for ${act.label || "Activity"} :</div>
+                            <div style="font-weight:700; margin-bottom:8px;">Status History for ${getActivityDisplayName(act, "Activity")} :</div>
                             ${statusText}
                         </div>` : ""}
                     </div>
@@ -451,7 +482,10 @@ function renderModule(mod,idx){
                         else{
                             subControl=`<input type="text" value="${sa.value||""}" readonly>`;
                         }
-                        li.innerHTML=`<strong>${sa.keyName||"Sub-Activity"} ${sa.keyName!==""?"("+ sa.keyName + ")":""} :</strong> ${subControl}`;
+                        li.innerHTML=`<strong>${getActivityDisplayName(sa, "Sub-Activity")} :</strong> ${subControl}`;
+                        if (sa && sa.subActivities && sa.subActivities.length > 0) {
+                            renderNestedActivityLabels(li, sa.subActivities, "Sub-Activity");
+                        }
                         ul.appendChild(li);
                     });
                     subDiv.appendChild(ul);
