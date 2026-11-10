@@ -1,0 +1,267 @@
+[
+  {
+    "module": "Family Management Dashboard",
+    "purpose": "Track family wellbeing, quality time, issues, decisions, risks and overall financial position.",
+    "id": 1,
+    "activities": [
+      {
+        "keyName": "A",
+        "label": "Family Time",
+        "title": "Quality time and engagement",
+        "type": "html",
+        "value": "<p>Monitor quality family interactions, activities and shared experiences.</p>",
+        "showChart": false,
+        "statusActivities": [
+          {
+            "status": "Weekly Family Dinner",
+            "color": "#10b981",
+            "dateTime": "2026-11-08T19:00"
+          },
+          {
+            "status": "Weekend Outing",
+            "color": "#3b82f6",
+            "dateTime": "2026-11-14T11:00"
+          }
+        ],
+        "subActivities": [
+          {
+            "keyName": "A1",
+            "label": "Family Time This Month",
+            "title": "Hours spent together",
+            "type": "int",
+            "value": "42",
+            "showChart": true
+          },
+          {
+            "keyName": "A2",
+            "label": "Quality Time Score",
+            "title": "Family satisfaction rating",
+            "type": "percentage",
+            "value": "88",
+            "showChart": true
+          },
+          {
+            "keyName": "A3",
+            "label": "Recent Activities",
+            "title": "Popular activities",
+            "type": "wordcloud",
+            "value": "Movie:5, Dinner:4, Walking:4, Shopping:3, Temple Visit:3, Holiday Planning:4",
+            "showChart": true
+          },
+          {
+            "keyName": "A4",
+            "label": "Family Trend",
+            "title": "Engagement trend",
+            "type": "trend",
+            "value": "up",
+            "showChart": true
+          }
+        ]
+      },
+
+      {
+        "keyName": "B",
+        "label": "Family Issues",
+        "title": "Current issues and concerns",
+        "type": "html",
+        "value": "<p>Track family concerns and follow-up actions.</p>",
+        "showChart": false,
+        "statusActivities": [
+          {
+            "status": "Education Planning",
+            "color": "#f59e0b",
+            "dateTime": "2026-11-15T18:00"
+          }
+        ],
+        "subActivities": [
+          {
+            "keyName": "B1",
+            "label": "Open Issues",
+            "title": "Active concerns",
+            "type": "int",
+            "value": "5",
+            "showChart": true
+          },
+          {
+            "keyName": "B2",
+            "label": "Issue Severity",
+            "title": "Overall family issue level",
+            "type": "severity",
+            "value": "medium",
+            "showChart": true
+          },
+          {
+            "keyName": "B3",
+            "label": "Issue Categories",
+            "title": "Current issue themes",
+            "type": "wordcloud",
+            "value": "Education:4, Health:3, Finance:4, Travel:2, Property:5",
+            "showChart": true
+          },
+          {
+            "keyName": "B4",
+            "label": "Resolution Progress",
+            "title": "Issues closed percentage",
+            "type": "percentage",
+            "value": "67",
+            "showChart": true
+          }
+        ]
+      },
+
+      {
+        "keyName": "C",
+        "label": "Family Decisions",
+        "title": "Important decisions and actions",
+        "type": "html",
+        "value": "<p>Capture key decisions and monitor implementation.</p>",
+        "showChart": false,
+        "statusActivities": [
+          {
+            "status": "Land Sale Decision",
+            "color": "#8b5cf6",
+            "dateTime": "2026-11-20T10:00"
+          }
+        ],
+        "subActivities": [
+          {
+            "keyName": "C1",
+            "label": "Pending Decisions",
+            "title": "Awaiting agreement",
+            "type": "int",
+            "value": "3",
+            "showChart": true
+          },
+          {
+            "keyName": "C2",
+            "label": "Decision Implementation",
+            "title": "Actions completed",
+            "type": "percentage",
+            "value": "75",
+            "showChart": true
+          },
+          {
+            "keyName": "C3",
+            "label": "Decision Categories",
+            "title": "Types of decisions",
+            "type": "wordcloud",
+            "value": "Property:5, Education:4, Travel:3, Investment:5, Healthcare:4",
+            "showChart": true
+          },
+          {
+            "keyName": "C4",
+            "label": "Next Review Date",
+            "title": "Decision review timeline",
+            "type": "timeline",
+            "value": "2026-12-01T18:00",
+            "showChart": true
+          }
+        ]
+      },
+
+      {
+        "keyName": "D",
+        "label": "Family Risk Assessment",
+        "title": "Potential future risks",
+        "type": "html",
+        "value": "<p>Assess risks that may affect financial stability, health and wellbeing.</p>",
+        "showChart": false,
+        "statusActivities": [],
+        "subActivities": [
+          {
+            "keyName": "D1",
+            "label": "Health Risks",
+            "title": "Family health exposure",
+            "type": "wordcloud",
+            "value": "Diabetes:3, Blood Pressure:2, Stress:4, Lifestyle:3",
+            "showChart": true
+          },
+          {
+            "keyName": "D2",
+            "label": "Financial Risks",
+            "title": "Financial uncertainties",
+            "type": "wordcloud",
+            "value": "Market Volatility:4, Job Loss:2, Inflation:4, Tax Changes:3",
+            "showChart": true
+          },
+          {
+            "keyName": "D3",
+            "label": "Property Risks",
+            "title": "Property related exposure",
+            "type": "wordcloud",
+            "value": "Legal Delay:4, Registration:3, Market Change:3, Maintenance:2",
+            "showChart": true
+          },
+          {
+            "keyName": "D4",
+            "label": "Overall Risk Score",
+            "title": "Aggregate family risk position",
+            "type": "slider",
+            "value": "38",
+            "showChart": true
+          }
+        ]
+      },
+
+      {
+        "keyName": "E",
+        "label": "Financial Position",
+        "title": "Overall household financial health",
+        "type": "html",
+        "value": "<p>Financial overview covering assets, cashflow, liabilities and investments.</p>",
+        "showChart": false,
+        "statusActivities": [],
+        "subActivities": [
+          {
+            "keyName": "E1",
+            "label": "Cash Available",
+            "title": "Available liquidity",
+            "type": "float",
+            "value": "2500000",
+            "showChart": true
+          },
+          {
+            "keyName": "E2",
+            "label": "Monthly Savings Rate",
+            "title": "Percentage of income saved",
+            "type": "percentage",
+            "value": "32",
+            "showChart": true
+          },
+          {
+            "keyName": "E3",
+            "label": "Investment Allocation",
+            "title": "Asset distribution",
+            "type": "wordcloud",
+            "value": "Property:5, FD:3, Mutual Funds:4, Gold:2, Cash:4",
+            "showChart": true
+          },
+          {
+            "keyName": "E4",
+            "label": "Net Worth Trend",
+            "title": "Overall wealth direction",
+            "type": "trend",
+            "value": "up",
+            "showChart": true
+          },
+          {
+            "keyName": "E5",
+            "label": "Emergency Fund Coverage",
+            "title": "Months covered",
+            "type": "slider",
+            "value": "12",
+            "showChart": true
+          },
+          {
+            "keyName": "E6",
+            "label": "Financial Health Score",
+            "title": "Overall financial position",
+            "type": "percentage",
+            "value": "84",
+            "showChart": true
+          }
+        ]
+      }
+    ]
+  }
+]
