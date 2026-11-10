@@ -1,14 +1,14 @@
 [
   {
-    "module": "Sample Business Continuity Plan",
-    "purpose": "Example activities using the data types and structure from modeldata.json. Edit or replace this sample with your own plan.",
+    "module": "Business Continuity Management Plan",
+    "purpose": "Business continuity dashboard aligned to NHS BCM and ISO 22301 principles including operational response, BIA, risk assessment and recovery strategy.",
     "activities": [
       {
         "keyName": "A",
         "label": "Incident Response",
         "title": "Response lead and escalation",
         "type": "text",
-        "value": "Notify the response lead, assess the impact, and contact the relevant teams.",
+        "value": "Notify incident manager, assess impact, initiate escalation and activate recovery procedures.",
         "showChart": false,
         "statusActivities": [
           {
@@ -20,10 +20,10 @@
         "subActivities": [
           {
             "keyName": "A1",
-            "label": "Escalation notes",
-            "title": "Response detail",
+            "label": "Escalation Procedure",
+            "title": "Incident escalation process",
             "type": "html",
-            "value": "<p>Escalate incidents to the <strong>response lead</strong>.</p><ul><li>Record the impact</li><li>Notify affected teams</li></ul>",
+            "value": "<p>Escalate incidents to the <strong>Incident Manager</strong>.</p><ul><li>Assess severity</li><li>Notify stakeholders</li><li>Activate BCM process if required</li></ul>",
             "showChart": false,
             "statusActivities": [],
             "subActivities": []
@@ -33,7 +33,7 @@
       {
         "keyName": "B",
         "label": "Backup Verification",
-        "title": "Latest backup verified",
+        "title": "Latest backup validation",
         "type": "boolean",
         "value": "true",
         "showChart": false,
@@ -43,316 +43,278 @@
       {
         "keyName": "C",
         "label": "Services Restored",
-        "title": "Number of services",
+        "title": "Recovered services",
         "type": "int",
         "value": "10",
-        "showChart": false,
+        "showChart": true,
         "statusActivities": [],
         "subActivities": []
       },
       {
         "keyName": "D",
         "label": "Recovery Progress",
-        "title": "Progress percentage",
+        "title": "Recovery completion percentage",
         "type": "percentage",
-        "value": "72.5",
-        "showChart": false,
+        "value": "72",
+        "showChart": true,
         "statusActivities": [],
         "subActivities": []
       },
       {
         "keyName": "E",
-        "label": "Recovery Readiness",
-        "title": "Readiness score",
-        "type": "slider",
-        "value": "67",
-        "showChart": false,
+        "label": "Estimated Recovery Cost",
+        "title": "Business recovery expenditure",
+        "type": "float",
+        "value": "122.5",
+        "showChart": true,
         "statusActivities": [],
         "subActivities": []
       },
       {
         "keyName": "F",
-        "label": "Estimated Recovery Time",
-        "title": "Recovery duration",
-        "type": "duration",
-        "value": "2 days",
-        "showChart": false,
+        "label": "Recovery Deadline",
+        "title": "Target service restoration date",
+        "type": "timeline",
+        "value": "2026-11-07T17:00",
+        "showChart": true,
         "statusActivities": [],
         "subActivities": []
       },
       {
         "keyName": "G",
-        "label": "Estimated Cost",
-        "title": "Recovery cost estimate",
-        "type": "float",
-        "value": "122.5",
-        "showChart": false,
-        "statusActivities": [],
-        "subActivities": []
-      },
-      {
-        "keyName": "H",
-        "label": "Recovery Deadline",
-        "title": "Target completion",
-        "type": "timeline",
-        "value": "2026-11-07T17:00",
-        "showChart": false,
-        "statusActivities": [],
-        "subActivities": []
-      },
-      {
-        "keyName": "I",
-        "label": "Service Impact",
-        "title": "Impact severity",
-        "type": "severity",
-        "value": "high",
-        "showChart": false,
-        "statusActivities": [],
-        "subActivities": []
-      },
-      {
-        "keyName": "J",
         "label": "Recovery Trend",
-        "title": "Progress direction",
+        "title": "Current recovery direction",
         "type": "trend",
         "value": "up",
-        "showChart": false,
+        "showChart": true,
         "statusActivities": [],
         "subActivities": []
       },
+
       {
-        "keyName": "K",
-        "label": "Disaster Recovery",
-        "title": "DR readiness",
-        "type": "dr",
-        "value": "active",
+        "keyName": "M",
+        "label": "Business Impact Analysis",
+        "title": "Critical Service Impact Assessment",
+        "type": "html",
+        "value": "<p>Business Impact Analysis identifies critical business functions, maximum tolerable outage periods, recovery requirements and service dependencies.</p>",
         "showChart": false,
-        "statusActivities": [],
-        "subActivities": []
+        "statusActivities": [
+          {
+            "status": "Annual BIA Review",
+            "color": "#10b981",
+            "dateTime": "2026-11-01T09:00"
+          }
+        ],
+        "subActivities": [
+          {
+            "keyName": "M1",
+            "label": "Clinical Service RTO",
+            "title": "Recovery Time Objective",
+            "type": "duration",
+            "value": "4 hours",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          },
+          {
+            "keyName": "M2",
+            "label": "Data Recovery RPO",
+            "title": "Recovery Point Objective",
+            "type": "duration",
+            "value": "15 minutes",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          },
+          {
+            "keyName": "M3",
+            "label": "Financial Impact Rating",
+            "title": "Financial consequence of outage",
+            "type": "severity",
+            "value": "high",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          },
+          {
+            "keyName": "M4",
+            "label": "Operational Impact Rating",
+            "title": "Service delivery impact",
+            "type": "severity",
+            "value": "critical",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          },
+          {
+            "keyName": "M5",
+            "label": "Regulatory and Reputation Impact",
+            "title": "Compliance and public confidence impact",
+            "type": "severity",
+            "value": "high",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          },
+          {
+            "keyName": "M6",
+            "label": "Critical Dependencies",
+            "title": "Resources required for service delivery",
+            "type": "wordcloud",
+            "value": "Clinical Staff:5, Network:5, Azure:4, SQL Server:5, Integration Engine:4, Power:5, Supplier Support:4",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          },
+          {
+            "keyName": "M7",
+            "label": "Critical Service Priorities",
+            "title": "Business recovery priorities",
+            "type": "wordcloud",
+            "value": "Patient Records:5, Clinical Access:5, ePJS:5, Integrations:4, Reporting:3",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          }
+        ]
       },
+
       {
-        "keyName": "L",
-        "label": "Recovery Priorities",
-        "title": "Priority word cloud",
-        "type": "wordcloud",
-        "value": "Critical services:5, Data recovery:4, Communications:3, Team readiness:2",
+        "keyName": "N",
+        "label": "Business Continuity Risk Assessment",
+        "title": "Threats and Vulnerabilities",
+        "type": "html",
+        "value": "<p>Assess threats that may disrupt critical services and determine overall organisational risk exposure.</p>",
         "showChart": false,
-        "statusActivities": [],
-        "subActivities": []
+        "statusActivities": [
+          {
+            "status": "Quarterly Risk Review",
+            "color": "#f59e0b",
+            "dateTime": "2026-11-01T10:00"
+          }
+        ],
+        "subActivities": [
+          {
+            "keyName": "N1",
+            "label": "Environmental Risks",
+            "title": "External environmental threats",
+            "type": "wordcloud",
+            "value": "Flood:4, Fire:5, Storm:3, Heatwave:2, Power Outage:5",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          },
+          {
+            "keyName": "N2",
+            "label": "Cyber Security Risks",
+            "title": "Technology and information threats",
+            "type": "wordcloud",
+            "value": "Ransomware:5, Data Breach:5, Malware:4, DDoS:4, Credential Theft:4",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          },
+          {
+            "keyName": "N3",
+            "label": "Operational Risks",
+            "title": "People and process risks",
+            "type": "wordcloud",
+            "value": "Human Error:5, Staff Shortage:4, Supplier Failure:4, Industrial Action:3, Equipment Failure:4",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          },
+          {
+            "keyName": "N4",
+            "label": "Overall Risk Exposure",
+            "title": "Aggregated risk score",
+            "type": "slider",
+            "value": "72",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          }
+        ]
       },
-	  {
-		  "keyName": "M",
-		  "label": "Business Impact Analysis (BIA)",
-		  "title": "Identify critical services and recovery requirements",
-		  "type": "html",
-		  "value": "<p>Business Impact Analysis identifies critical business functions, acceptable downtime, resource dependencies, and recovery requirements.</p>",
-		  "showChart": false,
-		  "statusActivities": [
-			{
-			  "status": "Annual BIA Review",
-			  "color": "#10b981",
-			  "dateTime": "2026-11-01T09:00"
-			}
-		  ],
-		  "subActivities": [
-			{
-			  "keyName": "M1",
-			  "label": "Recovery Time Objective (RTO)",
-			  "title": "Target restoration time",
-			  "type": "duration",
-			  "value": "4 hours",
-			  "showChart": true,
-			  "statusActivities": [],
-			  "subActivities": []
-			},
-			{
-			  "keyName": "M2",
-			  "label": "Recovery Point Objective (RPO)",
-			  "title": "Maximum acceptable data loss",
-			  "type": "duration",
-			  "value": "15 minutes",
-			  "showChart": true,
-			  "statusActivities": [],
-			  "subActivities": []
-			},
-			{
-			  "keyName": "M3",
-			  "label": "Financial Impact",
-			  "title": "Estimated financial impact",
-			  "type": "severity",
-			  "value": "high",
-			  "showChart": true,
-			  "statusActivities": [],
-			  "subActivities": []
-			},
-			{
-			  "keyName": "M4",
-			  "label": "Operational Impact",
-			  "title": "Service disruption impact",
-			  "type": "severity",
-			  "value": "critical",
-			  "showChart": true,
-			  "statusActivities": [],
-			  "subActivities": []
-			},
-			{
-			  "keyName": "M5",
-			  "label": "Reputational Impact",
-			  "title": "Public confidence impact",
-			  "type": "severity",
-			  "value": "high",
-			  "showChart": true,
-			  "statusActivities": [],
-			  "subActivities": []
-			},
-			{
-			  "keyName": "M6",
-			  "label": "Dependency Assessment",
-			  "title": "Critical dependencies",
-			  "type": "wordcloud",
-			  "value": "Staff:5, Network:5, Azure:4, SQL Server:5, Integration Engine:4, Supplier Support:3, Power:5",
-			  "showChart": true,
-			  "statusActivities": [],
-			  "subActivities": []
-			}
-		  ]
-		},
-	{
-	  "keyName": "N",
-	  "label": "Risk Assessment",
-	  "title": "Assess threats and vulnerabilities",
-	  "type": "html",
-	  "value": "<p>Evaluate internal and external risks that could disrupt business operations and identify mitigation controls.</p>",
-	  "showChart": false,
-	  "statusActivities": [
-		{
-		  "status": "Quarterly Risk Review",
-		  "color": "#f59e0b",
-		  "dateTime": "2026-11-01T10:00"
-		}
-	  ],
-	  "subActivities": [
-		{
-		  "keyName": "N1",
-		  "label": "Natural Risks",
-		  "title": "Environmental threats",
-		  "type": "wordcloud",
-		  "value": "Flood:4, Storm:3, Fire:5, Extreme Weather:3, Power Outage:5",
-		  "showChart": true,
-		  "statusActivities": [],
-		  "subActivities": []
-		},
-		{
-		  "keyName": "N2",
-		  "label": "Cyber Risks",
-		  "title": "Cyber security threats",
-		  "type": "wordcloud",
-		  "value": "Ransomware:5, Data Breach:5, Malware:4, DDoS:4, Credential Theft:4",
-		  "showChart": true,
-		  "statusActivities": [],
-		  "subActivities": []
-		},
-		{
-		  "keyName": "N3",
-		  "label": "Human-Made Risks",
-		  "title": "Operational and human threats",
-		  "type": "wordcloud",
-		  "value": "Staff Shortage:4, Human Error:5, Industrial Action:3, Supplier Failure:4, Sabotage:2",
-		  "showChart": true,
-		  "statusActivities": [],
-		  "subActivities": []
-		},
-		{
-		  "keyName": "N4",
-		  "label": "Overall Risk Rating",
-		  "title": "Current risk score",
-		  "type": "slider",
-		  "value": "72",
-		  "showChart": true,
-		  "statusActivities": [],
-		  "subActivities": []
-		}
-	  ]
-	},
-	{
-		  "keyName": "O",
-		  "label": "Business Continuity Strategy Development",
-		  "title": "Recovery and continuity strategies",
-		  "type": "html",
-		  "value": "<p>Define strategies that enable continuation of critical services during disruptions and support recovery within agreed recovery objectives.</p>",
-		  "showChart": false,
-		  "statusActivities": [
-			{
-			  "status": "Annual Strategy Review",
-			  "color": "#8b5cf6",
-			  "dateTime": "2026-11-01T11:00"
-			}
-		  ],
-		  "subActivities": [
-				{
-				  "keyName": "O1",
-				  "label": "Alternate Site",
-				  "title": "Secondary operational location",
-				  "type": "boolean",
-				  "value": "true",
-				  "showChart": false,
-				  "statusActivities": [],
-				  "subActivities": []
-				},
-				{
-				  "keyName": "O2",
-				  "label": "Remote Working Capability",
-				  "title": "Staff work-from-home readiness",
-				  "type": "percentage",
-				  "value": "95",
-				  "showChart": true,
-				  "statusActivities": [],
-				  "subActivities": []
-				},
-				{
-				  "keyName": "O3",
-				  "label": "Cloud Recovery",
-				  "title": "Azure failover capability",
-				  "type": "dr",
-				  "value": "active",
-				  "showChart": true,
-				  "statusActivities": [],
-				  "subActivities": []
-				},
-				{
-				  "keyName": "O4",
-				  "label": "Backup Strategy",
-				  "title": "Data protection approach",
-				  "type": "wordcloud",
-				  "value": "Daily Backup:5, Geo-Redundancy:4, Immutable Storage:4, Recovery Testing:5",
-				  "showChart": true,
-				  "statusActivities": [],
-				  "subActivities": []
-				},
-				{
-				  "keyName": "O5",
-				  "label": "Supplier Continuity",
-				  "title": "Third-party resilience",
-				  "type": "severity",
-				  "value": "medium",
-				  "showChart": true,
-				  "statusActivities": [],
-				  "subActivities": []
-				},
-				{
-				  "keyName": "O6",
-				  "label": "Recovery Readiness",
-				  "title": "Overall continuity readiness",
-				  "type": "percentage",
-				  "value": "88",
-				  "showChart": true,
-				  "statusActivities": [],
-				  "subActivities": []
-				}
-			]
-		}
-	]
-	,
-	"id": 1
-	}
+
+      {
+        "keyName": "O",
+        "label": "Business Continuity Strategy",
+        "title": "Recovery and Resilience Controls",
+        "type": "html",
+        "value": "<p>Strategies and controls used to ensure business continuity and facilitate recovery within agreed objectives.</p>",
+        "showChart": false,
+        "statusActivities": [
+          {
+            "status": "Annual Strategy Review",
+            "color": "#8b5cf6",
+            "dateTime": "2026-11-01T11:00"
+          }
+        ],
+        "subActivities": [
+          {
+            "keyName": "O1",
+            "label": "Alternative Working Location",
+            "title": "Secondary operational site availability",
+            "type": "boolean",
+            "value": "true",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          },
+          {
+            "keyName": "O2",
+            "label": "Remote Working Readiness",
+            "title": "Work from home capability",
+            "type": "percentage",
+            "value": "95",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          },
+          {
+            "keyName": "O3",
+            "label": "Disaster Recovery Capability",
+            "title": "Infrastructure recovery capability",
+            "type": "dr",
+            "value": "active",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          },
+          {
+            "keyName": "O4",
+            "label": "Backup and Recovery Strategy",
+            "title": "Data protection controls",
+            "type": "wordcloud",
+            "value": "Daily Backup:5, Immutable Storage:5, Recovery Testing:5, Geo Redundancy:4, Replication:4",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          },
+          {
+            "keyName": "O5",
+            "label": "Supplier Resilience",
+            "title": "Third party continuity preparedness",
+            "type": "percentage",
+            "value": "85",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          },
+          {
+            "keyName": "O6",
+            "label": "BCM Maturity Score",
+            "title": "Overall continuity readiness",
+            "type": "percentage",
+            "value": "88",
+            "showChart": true,
+            "statusActivities": [],
+            "subActivities": []
+          }
+        ]
+      }
+    ],
+    "id": 1
+  }
 ]
