@@ -172,6 +172,14 @@ function generateColors(n){
     }
     return colors;
 }
+
+function queueWordCloud(wordcloudList, id, rawValue) {
+    const safeValue = String(rawValue ?? "")
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'");
+    wordcloudList.push(`generateWordCloud('${id}','${safeValue}')`);
+}
+
 function stringParse(str1,valueMap){
     
     let result = str1.replace(/#(.*?)#/g, (_, expr) => {
@@ -358,10 +366,10 @@ function renderModule(mod,idx){
                     control=`${result||""}`;   
                 }
                 else if(act.type==="wordcloud" || act.type === "wc"){
-                    let str1 = act.value;
-                    control=`<div class="wordcloud-surface"><canvas id="wordCloud${actIdx}" ></canvas></div>`;
-                    let result=stringParse(str1,valueMap);
-                    wordcloudex.push(`generateWordCloud('wordCloud${actIdx}','${result}')`);
+                    const cloudId = `wordCloud${actIdx}`;
+                    control=`<div class="wordcloud-surface"><canvas id="${cloudId}" ></canvas></div>`;
+                    const result=stringParse(act.value || "", valueMap);
+                    queueWordCloud(wordcloudex, cloudId, result);
                 }
                 else{
                     control=`<input type="text" value="${act.value||""}" readonly>`;
@@ -408,7 +416,7 @@ function renderModule(mod,idx){
                     subDiv.className="sub-activities";
                     const ul=document.createElement("ul");
                     const subFloatData=[];
-                    act.subActivities.forEach(sa=>{
+                    act.subActivities.forEach((sa, saIdx)=>{
                         const li=document.createElement("li");
                         let subControl="";
                         if(sa.type==="formula"){
@@ -486,8 +494,11 @@ function renderModule(mod,idx){
                         else if(sa.type==="html"){
                             subControl=`${sa.value||""}`;
                         }
-                        else if(sa.type==="wordcloud"){
-                            subControl=`${sa.value||""}`;
+                        else if(sa.type==="wordcloud" || sa.type === "wc"){
+                            const cloudId = `subWordCloud${actIdx}_${saIdx}`;
+                            subControl=`<div class="wordcloud-surface"><canvas id="${cloudId}" ></canvas></div>`;
+                            const result=stringParse(sa.value || "", valueMap);
+                            queueWordCloud(wordcloudex, cloudId, result);
                         }
                         else{
                             subControl=`<input type="text" value="${sa.value||""}" readonly>`;
